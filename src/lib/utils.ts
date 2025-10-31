@@ -45,7 +45,10 @@ export function truncateText(text: string, maxLength: number = 200): string {
 /**
  * Extract plain text from markdown (simple version)
  */
-export function markdownToPlainText(markdown: string): string {
+// Re-export from markdown.ts for backward compatibility
+export { markdownToPlainText } from './markdown';
+
+export function markdownToPlainTextOld(markdown: string): string {
   return markdown
     .replace(/#{1,6}\s+/g, '') // Remove headers
     .replace(/\*\*([^*]+)\*\*/g, '$1') // Remove bold

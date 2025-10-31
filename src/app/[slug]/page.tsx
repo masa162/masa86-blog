@@ -5,9 +5,9 @@
 
 import { getD1 } from '@/lib/d1';
 import { postRowToPost } from '@/lib/utils';
+import { markdownToHtml } from '@/lib/markdown';
 import type { PostRow } from '@/types/database';
 import Link from 'next/link';
-import { marked } from 'marked';
 import { notFound } from 'next/navigation';
 
 export const runtime = 'edge';
@@ -82,7 +82,7 @@ export default async function PostPage({ params }: PageProps) {
 
       <div 
         className="markdown-content prose max-w-none"
-        dangerouslySetInnerHTML={{ __html: marked(post.content) }}
+        dangerouslySetInnerHTML={{ __html: markdownToHtml(post.content) }}
       />
 
       <div className="mt-12 pt-8 border-t border-[var(--border)]">
