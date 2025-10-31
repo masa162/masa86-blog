@@ -1,294 +1,128 @@
 # masa86-blog
 
-個人ブログシステム - Next.js 15 + Cloudflare Pages + D1
+個人ブログシステム - Next.js 15 + Cloudflare D1
 
 ## 概要
 
-シンプルで堅牢な個人ブログシステム。記事の作成・編集・削除を管理画面から行えます。
+Next.js 15とCloudflare D1を使用したフルスタックブログシステム。
+管理画面から記事の作成・編集・削除が可能です。
 
-### 技術スタック
+## 技術スタック
 
-- **フレームワーク**: Next.js 15 (App Router)
-- **ランタイム**: React 19
-- **言語**: TypeScript
-- **スタイリング**: TailwindCSS 4
-- **インフラ**: Cloudflare Pages + Workers + D1
-- **認証**: Basic認証
+- **フレームワーク**: Next.js 15.5 + Edge Runtime
+- **データベース**: Cloudflare D1 (SQLite)
+- **デプロイ**: Cloudflare Pages
+- **認証**: Basic認証（管理画面のみ）
 
-## 機能
+## Cloudflare Pages デプロイ設定
 
-### 公開サイト
+### ⚠️ 重要: wrangler.tomlを使用しない
 
-- トップページ（最新10件の記事表示）
-- 記事詳細ページ（Markdownレンダリング）
-- タグページ（タグ別記事一覧）
-- レスポンシブデザイン
-- ダークモード対応
+このプロジェクトでは、**wrangler.tomlファイルを使用しません**。
+すべての設定をCloudflare Dashboardで管理します。
 
-### 管理画面（`/admin`）
+理由:
+- wrangler.tomlがあると、Dashboardの設定が上書きされてしまう
+- 特にcompatibility_flagsが毎回外れる問題が発生
+- Dashboardでの管理の方が安定している
 
-- Basic認証で保護
-- 記事一覧表示
-- 新規記事作成（自動slug割り当て）
-- 記事編集
-- 記事削除
+### Cloudflare Dashboard設定
+
+#### 1. ビルド設定
+- **Build command**: `npx @cloudflare/next-on-pages`
+- **Build output directory**: `.vercel/output/static`
+
+#### 2. D1データベースバインディング
+- Settings → Functions → D1 database bindings
+- **Variable name**: `DB`
+- **D1 database**: `masa86-blog-db`
+
+#### 3. Compatibility Flags（重要）
+- Settings → Functions → Compatibility Flags
+- **Production**: `nodejs_compat` を追加
+- **Preview**: `nodejs_compat` を追加
+
+#### 4. 環境変数（Basic認証）
+- Settings → Environment variables
+- **BASIC_AUTH_USER**: `mn`
+- **BASIC_AUTH_PASS**: `39`
 
 ## ローカル開発
 
-### 前提条件
-
-- Node.js 20以上
-- npm
-- Cloudflare アカウント
-- Wrangler CLI
-
-### セットアップ
-
-1. **依存関係のインストール**
-
 ```bash
+# 依存関係のインストール
 npm install
-```
 
-2. **D1データベースの作成**
+# ビルド
+npm run build
 
-```bash
-npx wrangler d1 create masa86-blog-db
-```
+# Cloudflare Pages用ビルド（ローカルテスト）
+npm run pages:build
 
-作成されたデータベースIDをメモしてください。
-
-3. **データベースのマイグレーション**
-
-```bash
-npx wrangler d1 execute masa86-blog-db --local --file=./db/migrations/0000_create_posts_table.sql
-```
-
-本番環境用:
-
-```bash
-npx wrangler d1 execute masa86-blog-db --remote --file=./db/migrations/0000_create_posts_table.sql
-```
-
-4. **環境変数の設定（ローカル開発）**
-
-`.dev.vars`ファイルを作成:
-
-```
-BASIC_AUTH_USER=mn
-BASIC_AUTH_PASS=39
-```
-
-5. **wrangler.tomlの更新**
-
-`wrangler.toml`のdatabase_idを実際のIDに更新:
-
-```toml
-[[d1_databases]]
-binding = "DB"
-database_name = "masa86-blog-db"
-database_id = "your-database-id-here"
-```
-
-6. **ローカル開発サーバーの起動**
-
-```bash
-npm run dev
-```
-
-または、Cloudflare環境でのプレビュー:
-
-```bash
+# ローカルプレビュー
 npm run preview
 ```
 
-## デプロイ
-
-### Cloudflare Pagesへのデプロイ
-
-#### 1. D1データベースの作成（本番環境）
-
-```bash
-npx wrangler d1 create masa86-blog-db
-```
-
-#### 2. マイグレーション実行
-
-```bash
-npx wrangler d1 execute masa86-blog-db --remote --file=./db/migrations/0000_create_posts_table.sql
-```
-
-#### 3. Cloudflare Dashboard設定
-
-1. **Pagesプロジェクト作成**
-   - Workers & Pages → Create application → Pages → Connect to Git
-   - リポジトリ: `masa162/masa86-blog`
-   - Production branch: `main`
-
-2. **ビルド設定**
-   - Build command: `npx @cloudflare/next-on-pages`
-   - Build output directory: `.vercel/output/static`
-   - Root directory: (空欄)
-
-3. **環境変数の設定**
-   - Settings → Environment variables
-   ```
-   BASIC_AUTH_USER = mn
-   BASIC_AUTH_PASS = 39
-   ```
-
-4. **D1バインディング**
-   - Settings → Functions → D1 database bindings
-   - Variable name: `DB`
-   - D1 database: `masa86-blog-db`
-
-5. **Compatibility flags**
-   - Settings → Functions → Compatibility flags
-   - `nodejs_compat`を追加
-
-#### 4. デプロイ
-
-GitHubにプッシュすると自動デプロイされます:
-
-```bash
-git add .
-git commit -m "Initial commit"
-git push origin main
-```
-
-または、Wranglerから直接デプロイ:
-
-```bash
-npm run deploy
-```
-
-## プロジェクト構成
-
-```
-masa86-blog/
-├── db/
-│   └── migrations/          # D1マイグレーションSQL
-├── docs/
-│   └── memo.md              # メモ
-├── src/
-│   ├── app/
-│   │   ├── [slug]/          # 記事詳細ページ
-│   │   ├── admin/           # 管理画面
-│   │   ├── api/posts/       # Posts API
-│   │   ├── tags/[tag]/      # タグページ
-│   │   ├── layout.tsx       # ルートレイアウト
-│   │   ├── page.tsx         # トップページ
-│   │   └── globals.css      # グローバルCSS
-│   ├── lib/
-│   │   ├── d1.ts            # D1データベースクライアント
-│   │   └── utils.ts         # ユーティリティ関数
-│   ├── types/
-│   │   ├── cloudflare.ts    # Cloudflare型定義
-│   │   └── database.ts      # データベース型定義
-│   └── middleware.ts        # Basic認証
-├── next.config.ts
-├── package.json
-├── tsconfig.json
-└── wrangler.toml
-```
-
-## データベーススキーマ
+## データベース
 
 ### postsテーブル
 
-| カラム名    | 型      | 説明                      |
-| ----------- | ------- | ------------------------- |
-| id          | INTEGER | 主キー（自動採番）        |
-| slug        | TEXT    | URL用識別子（0001-9999）  |
-| title       | TEXT    | 記事タイトル              |
-| content     | TEXT    | 本文（Markdown）          |
-| tags        | TEXT    | タグ（JSON配列）          |
-| created_at  | TEXT    | 作成日時（ISO8601）       |
-| updated_at  | TEXT    | 更新日時（ISO8601）       |
+| カラム | 型 | 説明 |
+|--------|-----|------|
+| id | INTEGER | 主キー |
+| slug | TEXT | URL用スラッグ |
+| title | TEXT | タイトル |
+| content | TEXT | 本文（Markdown） |
+| tags | TEXT | タグ（JSON配列） |
+| created_at | TEXT | 作成日時 |
+| updated_at | TEXT | 更新日時 |
 
-## API仕様
+### スキーマ適用
 
-### GET /api/posts
+```bash
+# リモートD1にスキーマを適用
+wrangler d1 execute masa86-blog-db --remote --file=db/migrations/0000_create_posts_table.sql
 
-記事一覧の取得
-
-**クエリパラメータ:**
-- `limit`: 取得件数（デフォルト: 10）
-- `tag`: タグでフィルタ
-- `search`: タイトル・本文で検索
-
-### GET /api/posts/[id]
-
-記事詳細の取得
-
-### POST /api/posts
-
-記事の作成（要認証）
-
-**リクエストボディ:**
-```json
-{
-  "title": "記事タイトル",
-  "content": "本文（Markdown）",
-  "tags": ["タグ1", "タグ2"]
-}
+# ローカルD1にスキーマを適用
+wrangler d1 execute masa86-blog-db --file=db/migrations/0000_create_posts_table.sql
 ```
 
-### PUT /api/posts/[id]
+## 機能
 
-記事の更新（要認証）
+### 公開機能
+- トップページ: 最新10件の記事一覧
+- 記事詳細ページ: Markdownレンダリング
+- タグページ: タグ別記事一覧
 
-### DELETE /api/posts/[id]
-
-記事の削除（要認証）
-
-## 使い方
-
-### 記事の作成
-
-1. `/admin`にアクセス
-2. Basic認証でログイン（ID: mn / Pass: 39）
-3. 「新規作成」ボタンをクリック
-4. タイトル、本文、タグを入力して保存
-5. slugは自動で割り当てられます（0001, 0002, ...）
-
-### 記事の編集・削除
-
-1. 管理画面の記事一覧から「編集」ボタンをクリック
-2. 内容を変更して「更新」ボタン
-3. 削除する場合は「削除」ボタン
+### 管理機能（/admin）
+- **認証**: Basic認証（ID: mn, Pass: 39）
+- 記事一覧: 全記事の管理
+- 新規作成: Markdownエディタ
+- 編集: 既存記事の編集
+- 削除: 記事の削除
 
 ## トラブルシューティング
 
-### ビルドエラー
+詳細は `docs/TROUBLESHOOTING.md` を参照してください。
 
-```bash
-npm run build
-```
+### よくある問題
 
-でエラーが出る場合、TypeScriptの型エラーを確認してください。
+1. **管理画面で500エラー**
+   - D1バインディングが設定されているか確認
+   - Compatibility flags（`nodejs_compat`）が設定されているか確認
 
-### D1接続エラー
+2. **Compatibility flagsが外れる**
+   - wrangler.tomlファイルを削除してください
+   - すべての設定をDashboardで管理します
 
-- Cloudflare Dashboardでバインディングが正しく設定されているか確認
-- `wrangler.toml`のdatabase_idが正しいか確認
-
-### 認証が通らない
-
-- 環境変数`BASIC_AUTH_USER`と`BASIC_AUTH_PASS`が設定されているか確認
-- Cloudflare Dashboard → Settings → Environment variablesで確認
+3. **トップページにも認証が適用される**
+   - middleware.tsのmatcherが`['/admin/:path*']`になっているか確認
+   - Dashboardでキャッシュをクリアして再デプロイ
 
 ## ライセンス
 
-MIT
+Private
 
 ## 作成者
 
-masa86 (Belong2jazz@gmail.com)
-
-## 参考
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Cloudflare Pages](https://pages.cloudflare.com/)
-- [Cloudflare D1](https://developers.cloudflare.com/d1/)
-
+masa86
