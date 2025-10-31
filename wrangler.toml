@@ -1,12 +1,12 @@
-# Wrangler configuration for local development
-# Note: Production settings should be configured in Cloudflare Dashboard
-# This file is ONLY for local development with `wrangler dev`
+# Wrangler configuration for Cloudflare Pages
+# Note: Compatibility flags and other settings should be configured in Cloudflare Dashboard
+# Do NOT set compatibility_flags here as it will override Dashboard settings
 
 name = "masa86-blog"
 compatibility_date = "2024-01-01"
-compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".vercel/output/static"
 
-# Local D1 binding for development
+# D1 Database binding
 [[d1_databases]]
 binding = "DB"
 database_name = "masa86-blog-db"
