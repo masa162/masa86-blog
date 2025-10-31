@@ -13,10 +13,10 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "marked": "^16.4.1",
     "next": "^15.0.3",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-markdown": "^10.1.0"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@cloudflare/next-on-pages": "^1.13.5",
@@ -33,4 +33,3 @@
     "wrangler": "^3.87.0"
   }
 }
-

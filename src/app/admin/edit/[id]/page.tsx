@@ -5,6 +5,8 @@
  * Edit an existing post
  */
 
+export const runtime = 'edge';
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';

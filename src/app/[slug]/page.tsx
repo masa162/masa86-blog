@@ -7,11 +7,10 @@ import { getD1 } from '@/lib/d1';
 import { postRowToPost } from '@/lib/utils';
 import type { PostRow } from '@/types/database';
 import Link from 'next/link';
-import ReactMarkdown from 'react-markdown';
+import { marked } from 'marked';
 import { notFound } from 'next/navigation';
 
-// Use nodejs runtime for react-markdown compatibility
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 interface PageProps {
@@ -81,9 +80,10 @@ export default async function PostPage({ params }: PageProps) {
         )}
       </header>
 
-      <div className="markdown-content prose max-w-none">
-        <ReactMarkdown>{post.content}</ReactMarkdown>
-      </div>
+      <div 
+        className="markdown-content prose max-w-none"
+        dangerouslySetInnerHTML={{ __html: marked(post.content) }}
+      />
 
       <div className="mt-12 pt-8 border-t border-[var(--border)]">
         <Link 
