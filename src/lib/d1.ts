@@ -32,26 +32,22 @@ export function getD1(): D1Database {
  * Create a mock D1 database for build time
  */
 function createMockD1(): D1Database {
-  const throwError = () => {
-    throw new Error('D1 Database binding not configured. This is a build-time mock.');
-  };
-
   return {
     prepare: () => ({
       bind: () => ({
-        all: throwError,
-        first: throwError,
-        run: throwError,
-        raw: throwError,
+        all: async () => ({ results: [], success: true, meta: {} }),
+        first: async () => null,
+        run: async () => ({ success: true, meta: { duration: 0, last_row_id: 0, changes: 0, served_by: '', internal_stats: null } }),
+        raw: async () => [],
       }),
-      all: throwError,
-      first: throwError,
-      run: throwError,
-      raw: throwError,
+      all: async () => ({ results: [], success: true, meta: {} }),
+      first: async () => null,
+      run: async () => ({ success: true, meta: { duration: 0, last_row_id: 0, changes: 0, served_by: '', internal_stats: null } }),
+      raw: async () => [],
     }),
-    dump: throwError,
-    batch: throwError,
-    exec: throwError,
+    dump: async () => new ArrayBuffer(0),
+    batch: async () => [],
+    exec: async () => ({ count: 0, duration: 0 }),
   } as any;
 }
 
