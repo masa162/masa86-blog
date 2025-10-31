@@ -6,22 +6,39 @@
 import { getD1 } from '@/lib/d1';
 import { postRowToPost } from '@/lib/utils';
 import type { PostRow } from '@/types/database';
+import type { Post } from '@/types/database';
 import Link from 'next/link';
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 export default async function AdminPage() {
-  const db = getD1();
+  let posts: Post[] = [];
+  let error: string | null = null;
   
-  const { results } = await db
-    .prepare('SELECT * FROM posts ORDER BY created_at DESC')
-    .all<PostRow>();
-  
-  const posts = (results || []).map(postRowToPost);
+  try {
+    const db = getD1();
+    
+    const { results } = await db
+      .prepare('SELECT * FROM posts ORDER BY created_at DESC')
+      .all<PostRow>();
+    
+    posts = (results || []).map(postRowToPost);
+  } catch (e) {
+    error = e instanceof Error ? e.message : 'Unknown error';
+    console.error('Admin page error:', e);
+  }
 
   return (
     <div>
+      {error && (
+        <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+          <h3 className="font-bold mb-2">Error Loading Posts</h3>
+          <p className="text-sm">{error}</p>
+          <p className="text-xs mt-2">Check if D1 binding is configured in Cloudflare Dashboard</p>
+        </div>
+      )}
+      
       <div className="mb-6 flex justify-between items-center">
         <div>
           <Link 
