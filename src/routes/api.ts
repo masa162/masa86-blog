@@ -33,6 +33,38 @@ api.get('/posts/:slug', async (c) => {
   }
 });
 
+// 検索API（キーワード、タグ、日付範囲、ページネーション）
+api.get('/search', async (c) => {
+  try {
+    const keyword = c.req.query('keyword');
+    const tag = c.req.query('tag');
+    const startDate = c.req.query('startDate');
+    const endDate = c.req.query('endDate');
+    const page = parseInt(c.req.query('page') || '1');
+    const limit = parseInt(c.req.query('limit') || '10');
+
+    const result = await postService.searchPosts(c.env.DB, {
+      keyword,
+      tag,
+      startDate,
+      endDate,
+      limit,
+      offset: (page - 1) * limit
+    });
+
+    return c.json({
+      posts: result.posts,
+      total: result.total,
+      page,
+      limit,
+      totalPages: Math.ceil(result.total / limit)
+    });
+  } catch (error) {
+    console.error('[ERROR] GET /api/search:', error);
+    return c.json({ error: 'Failed to search posts' }, 500);
+  }
+});
+
 // タグ一覧取得
 api.get('/tags', async (c) => {
   try {
