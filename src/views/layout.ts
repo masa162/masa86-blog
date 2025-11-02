@@ -53,32 +53,32 @@ export const layout = (title: string, content: string, seo?: SEOMetadata) => {
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Trebuchet MS', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
-      font-size: 14px;
-      line-height: 1.5;
-      color: #666666;
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      color: #333333;
       max-width: 860px;
       margin: 0 auto;
-      padding: 10px 40px;
+      padding: 20px;
       background: #ffffff;
     }
     header {
-      margin-bottom: 45px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid #dddddd;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #e0e0e0;
     }
     h1 {
-      font-family: Arial, sans-serif;
-      font-size: 40px;
-      font-weight: normal;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 32px;
+      font-weight: 700;
       margin-bottom: 10px;
-      color: #666666;
+      color: #333333;
     }
     h2 {
-      font-size: 22px;
-      font-weight: normal;
+      font-size: 24px;
+      font-weight: 600;
       margin-bottom: 15px;
-      color: #666666;
+      color: #2d4a3a;
     }
     nav {
       margin-top: 15px;
@@ -86,33 +86,36 @@ export const layout = (title: string, content: string, seo?: SEOMetadata) => {
     nav a {
       margin-right: 1.5rem;
       text-decoration: none;
-      color: #2288bb;
-      font-size: 13px;
+      color: #0066cc;
+      font-size: 14px;
     }
     nav a:hover {
-      color: #33aaff;
+      color: #004499;
       text-decoration: underline;
     }
-    nav a:visited {
-      color: #888888;
-    }
     article {
-      background: transparent;
-      padding: 15px 0;
-      margin-bottom: 30px;
-      border-bottom: 1px solid #eeeeee;
+      background: #ffffff;
+      padding: 15px;
+      margin-bottom: 15px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+    article:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
     }
     article h2 {
-      margin-top: 5px;
-      margin-bottom: 8px;
+      margin: 0 0 6px 0;
     }
     article h2 a {
       text-decoration: none;
-      color: #666666;
-      font-size: 22px;
+      color: #333333;
+      font-size: 16px;
+      font-weight: 600;
     }
     article h2 a:hover {
-      color: #2288bb;
+      color: #0066cc;
     }
     .post-meta {
       display: inline-block;
@@ -134,8 +137,55 @@ export const layout = (title: string, content: string, seo?: SEOMetadata) => {
     .content {
       white-space: pre-wrap;
       word-wrap: break-word;
+      color: #333333;
+      line-height: 1.6;
+    }
+    .content h1 {
+      color: #2d4a3a;
+      font-size: 28px;
+      font-weight: 700;
+      margin: 30px 0 20px 0;
+      padding-bottom: 8px;
+      border-bottom: 3px solid #2d4a3a;
+    }
+    .content h2 {
+      color: #2d4a3a;
+      font-size: 24px;
+      font-weight: 600;
+      margin: 30px 0 15px 0;
+      padding-bottom: 5px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+    .content h3 {
+      color: #2d4a3a;
+      font-size: 20px;
+      font-weight: 600;
+      margin: 25px 0 10px 0;
+    }
+    .content p {
+      margin: 15px 0;
+    }
+    .content blockquote {
+      margin: 15px 0;
+      padding: 15px 20px;
+      background-color: #f9f9f9;
+      border-left: 4px solid #0066cc;
+      font-style: italic;
       color: #666666;
-      line-height: 1.5;
+    }
+    .content code {
+      font-family: 'Courier New', monospace;
+      background-color: #f4f4f4;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-size: 14px;
+    }
+    .content pre {
+      background-color: #f4f4f4;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      margin: 15px 0;
     }
     table {
       width: 100%;
@@ -155,15 +205,12 @@ export const layout = (title: string, content: string, seo?: SEOMetadata) => {
       font-size: 12px;
     }
     a {
-      color: #2288bb;
+      color: #0066cc;
       text-decoration: none;
     }
     a:hover {
-      color: #33aaff;
+      color: #004499;
       text-decoration: underline;
-    }
-    a:visited {
-      color: #888888;
     }
     button, .primary, .secondary {
       padding: 8px 15px;
@@ -180,13 +227,13 @@ export const layout = (title: string, content: string, seo?: SEOMetadata) => {
       background: #eeeeee;
     }
     button.primary {
-      background: #2288bb;
+      background: #0066cc;
       color: #ffffff;
-      border-color: #2288bb;
+      border-color: #0066cc;
     }
     button.primary:hover {
-      background: #33aaff;
-      border-color: #33aaff;
+      background: #004499;
+      border-color: #004499;
     }
     button.secondary {
       background: #ffffff;
@@ -222,12 +269,12 @@ export const layout = (title: string, content: string, seo?: SEOMetadata) => {
     .back-link {
       display: inline-block;
       margin-top: 15px;
-      color: #2288bb;
+      color: #0066cc;
       text-decoration: none;
       font-size: 13px;
     }
     .back-link:hover {
-      color: #33aaff;
+      color: #004499;
       text-decoration: underline;
     }
   </style>
