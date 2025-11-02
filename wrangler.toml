@@ -1,0 +1,11 @@
+name = "masa86-blog"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "masa86-blog-db"
+database_id = "b04a838e-0f4f-4b87-8691-c13d02e049a8"
+
+[vars]
+ADMIN_USERNAME = "admin"

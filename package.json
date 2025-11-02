@@ -1,0 +1,25 @@
+{
+  "name": "masa86-blog",
+  "version": "1.0.0",
+  "description": "Simple blog powered by Hono + Drizzle + Cloudflare Workers",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:local": "wrangler d1 execute masa86-blog-db --local --file=",
+    "db:remote": "wrangler d1 execute masa86-blog-db --remote --file="
+  },
+  "keywords": ["blog", "hono", "cloudflare", "d1"],
+  "author": "masa86",
+  "license": "MIT",
+  "packageManager": "pnpm@10.11.1",
+  "dependencies": {
+    "drizzle-orm": "^0.44.7",
+    "hono": "^4.10.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20251014.0",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.45.3"
+  }
+}
