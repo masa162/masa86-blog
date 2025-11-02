@@ -15,48 +15,42 @@ interface PaginationOptions {
 export const homePage = (posts: Post[], options?: PaginationOptions) => {
   // 検索フォーム
   const searchFormHtml = options ? html`
-    <div style="background: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-      <h2 style="margin-bottom: 1rem;">記事を検索</h2>
+    <div style="padding: 20px 0; margin-bottom: 30px; border-bottom: 1px solid #eeeeee;">
+      <h2 style="font-size: 18px; margin-bottom: 15px;">記事を検索</h2>
       <form method="GET" action="/">
-        <div style="margin-bottom: 1rem;">
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">キーワード</label>
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; margin-bottom: 5px;">キーワード</label>
           <input type="text" name="keyword" value="${options.keyword || ''}"
-                 style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+                 style="width: 100%;"
                  placeholder="タイトルまたは本文を検索">
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px;">
           <div>
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">タグ</label>
-            <select name="tag" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+            <label style="display: block; margin-bottom: 5px;">タグ</label>
+            <select name="tag" style="width: 100%;">
               <option value="">すべて</option>
               ${options.tags.map(t =>
                 `<option value="${t}" ${options.tag === t ? 'selected' : ''}>${t}</option>`
               ).join('')}
             </select>
           </div>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
           <div>
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">開始日</label>
-            <input type="date" name="startDate" value="${options.startDate || ''}"
-                   style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+            <label style="display: block; margin-bottom: 5px;">開始日</label>
+            <input type="date" name="startDate" value="${options.startDate || ''}" style="width: 100%;">
           </div>
           <div>
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">終了日</label>
-            <input type="date" name="endDate" value="${options.endDate || ''}"
-                   style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+            <label style="display: block; margin-bottom: 5px;">終了日</label>
+            <input type="date" name="endDate" value="${options.endDate || ''}" style="width: 100%;">
           </div>
         </div>
 
-        <div style="display: flex; gap: 1rem;">
+        <div style="display: flex; gap: 8px; align-items: center;">
           <button type="submit" class="primary">検索</button>
-          <a href="/" style="padding: 0.5rem 1rem; background: #666; color: white; text-decoration: none; border-radius: 4px; display: inline-block;">クリア</a>
+          <a href="/" class="secondary" style="padding: 8px 15px; display: inline-block;">クリア</a>
+          ${options.total > 0 ? `<span style="margin-left: 10px; color: #999; font-size: 12px;">${options.total}件</span>` : ''}
         </div>
       </form>
-
-      ${options.total > 0 ? `<p style="margin-top: 1rem; color: #666;">${options.total}件の記事が見つかりました</p>` : ''}
     </div>
   ` : '';
 
@@ -69,32 +63,32 @@ export const homePage = (posts: Post[], options?: PaginationOptions) => {
 
     return html`
       <article>
-        <h2><a href="/posts/${post.slug}">${post.title}</a></h2>
         <div class="post-meta">
           ${new Date(post.createdAt).toLocaleDateString('ja-JP')}
         </div>
-        <div style="margin-bottom: 0.5rem;">${tagsHtml}</div>
-        <div class="content" style="max-height: 150px; overflow: hidden;">
-          ${post.content.substring(0, 200)}${post.content.length > 200 ? '...' : ''}
+        <h2><a href="/posts/${post.slug}">${post.title}</a></h2>
+        <div style="margin-bottom: 10px;">${tagsHtml}</div>
+        <div class="content" style="color: #888; font-size: 13px; line-height: 1.6; margin-bottom: 10px;">
+          ${post.content.substring(0, 150).replace(/\n/g, ' ')}${post.content.length > 150 ? '...' : ''}
         </div>
-        <a href="/posts/${post.slug}">続きを読む →</a>
+        <a href="/posts/${post.slug}" style="font-size: 12px;">続きを読む →</a>
       </article>
     `;
   }).join('');
 
   // ページネーション
   const paginationHtml = options && options.totalPages > 1 ? html`
-    <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem;">
+    <div style="display: flex; justify-content: center; gap: 12px; margin-top: 40px; padding-top: 30px; border-top: 1px solid #eeeeee;">
       ${options.page > 1
-        ? `<a href="/?page=${options.page - 1}${buildQueryString(options)}" style="padding: 0.5rem 1rem; background: #0066cc; color: white; text-decoration: none; border-radius: 4px;">← 前へ</a>`
-        : ''
+        ? `<a href="/?page=${options.page - 1}${buildQueryString(options)}" style="padding: 6px 12px; font-size: 12px;">← 前へ</a>`
+        : '<span style="padding: 6px 12px; font-size: 12px; color: #ccc;">← 前へ</span>'
       }
-      <span style="padding: 0.5rem 1rem; background: white; border-radius: 4px;">
+      <span style="padding: 6px 12px; font-size: 12px; color: #999;">
         ${options.page} / ${options.totalPages}
       </span>
       ${options.page < options.totalPages
-        ? `<a href="/?page=${options.page + 1}${buildQueryString(options)}" style="padding: 0.5rem 1rem; background: #0066cc; color: white; text-decoration: none; border-radius: 4px;">次へ →</a>`
-        : ''
+        ? `<a href="/?page=${options.page + 1}${buildQueryString(options)}" style="padding: 6px 12px; font-size: 12px;">次へ →</a>`
+        : '<span style="padding: 6px 12px; font-size: 12px; color: #ccc;">次へ →</span>'
       }
     </div>
   ` : '';

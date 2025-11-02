@@ -53,112 +53,181 @@ export const layout = (title: string, content: string, seo?: SEOMetadata) => {
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      line-height: 1.6;
-      color: #333;
-      max-width: 800px;
+      font-family: 'Trebuchet MS', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #666666;
+      max-width: 860px;
       margin: 0 auto;
-      padding: 2rem 1rem;
-      background: #f5f5f5;
+      padding: 10px 40px;
+      background: #ffffff;
     }
     header {
-      margin-bottom: 2rem;
-      padding-bottom: 1rem;
-      border-bottom: 2px solid #333;
+      margin-bottom: 45px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #dddddd;
     }
-    h1 { font-size: 2rem; margin-bottom: 0.5rem; }
-    h2 { font-size: 1.5rem; margin-bottom: 1rem; }
-    nav a { margin-right: 1rem; text-decoration: none; color: #0066cc; }
-    nav a:hover { text-decoration: underline; }
+    h1 {
+      font-family: Arial, sans-serif;
+      font-size: 40px;
+      font-weight: normal;
+      margin-bottom: 10px;
+      color: #666666;
+    }
+    h2 {
+      font-size: 22px;
+      font-weight: normal;
+      margin-bottom: 15px;
+      color: #666666;
+    }
+    nav {
+      margin-top: 15px;
+    }
+    nav a {
+      margin-right: 1.5rem;
+      text-decoration: none;
+      color: #2288bb;
+      font-size: 13px;
+    }
+    nav a:hover {
+      color: #33aaff;
+      text-decoration: underline;
+    }
+    nav a:visited {
+      color: #888888;
+    }
     article {
-      background: white;
-      padding: 2rem;
-      border-radius: 8px;
-      margin-bottom: 2rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      background: transparent;
+      padding: 15px 0;
+      margin-bottom: 30px;
+      border-bottom: 1px solid #eeeeee;
+    }
+    article h2 {
+      margin-top: 5px;
+      margin-bottom: 8px;
     }
     article h2 a {
       text-decoration: none;
-      color: #333;
+      color: #666666;
+      font-size: 22px;
     }
     article h2 a:hover {
-      color: #0066cc;
+      color: #2288bb;
     }
     .post-meta {
-      color: #666;
-      font-size: 0.9rem;
-      margin-bottom: 1rem;
+      display: inline-block;
+      background: #bbbbbb;
+      color: #ffffff;
+      font-size: 11px;
+      padding: 5px 10px;
+      margin-bottom: 10px;
     }
     .tag {
       display: inline-block;
-      background: #e0e0e0;
-      padding: 0.2rem 0.6rem;
-      border-radius: 4px;
-      font-size: 0.85rem;
-      margin-right: 0.5rem;
-      margin-bottom: 0.5rem;
+      background: #eeeeee;
+      color: #666666;
+      padding: 3px 8px;
+      font-size: 11px;
+      margin-right: 5px;
+      margin-bottom: 5px;
     }
     .content {
       white-space: pre-wrap;
       word-wrap: break-word;
+      color: #666666;
+      line-height: 1.5;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 1rem;
+      margin-top: 20px;
+      margin-bottom: 20px;
     }
     th, td {
-      padding: 0.5rem;
+      padding: 8px 10px;
       text-align: left;
-      border-bottom: 1px solid #ddd;
+      border-bottom: 1px solid #dddddd;
     }
     th {
-      background: #f0f0f0;
+      background: #eeeeee;
       font-weight: bold;
+      color: #666666;
+      font-size: 12px;
+    }
+    a {
+      color: #2288bb;
+      text-decoration: none;
+    }
+    a:hover {
+      color: #33aaff;
+      text-decoration: underline;
+    }
+    a:visited {
+      color: #888888;
     }
     button, .primary, .secondary {
-      padding: 0.5rem 1rem;
-      margin-right: 0.5rem;
-      margin-bottom: 0.5rem;
-      border: none;
-      border-radius: 4px;
-      background: #0066cc;
-      color: white;
+      padding: 8px 15px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      border: 1px solid #dddddd;
+      background: #ffffff;
+      color: #666666;
       cursor: pointer;
-      font-size: 0.9rem;
+      font-size: 12px;
+      font-family: inherit;
     }
     button:hover, .primary:hover {
-      background: #0052a3;
+      background: #eeeeee;
     }
     button.primary {
-      background: #0066cc;
+      background: #2288bb;
+      color: #ffffff;
+      border-color: #2288bb;
+    }
+    button.primary:hover {
+      background: #33aaff;
+      border-color: #33aaff;
     }
     button.secondary {
-      background: #666;
+      background: #ffffff;
+      color: #666666;
+      border-color: #dddddd;
     }
     button.secondary:hover {
-      background: #444;
+      background: #eeeeee;
     }
     button.danger {
       background: #cc0000;
+      color: #ffffff;
+      border-color: #cc0000;
     }
     button.danger:hover {
-      background: #a30000;
+      background: #dd0000;
     }
-    input[type="text"], textarea {
-      font-size: 1rem;
+    input[type="text"], input[type="date"], select, textarea {
+      font-size: 13px;
+      font-family: inherit;
+      color: #666666;
+      border: 1px solid #dddddd;
+      padding: 6px 8px;
     }
     input:disabled {
-      background: #f0f0f0;
+      background: #eeeeee;
       cursor: not-allowed;
+    }
+    label {
+      font-size: 12px;
+      color: #666666;
     }
     .back-link {
       display: inline-block;
-      margin-top: 1rem;
-      color: #0066cc;
+      margin-top: 15px;
+      color: #2288bb;
       text-decoration: none;
+      font-size: 13px;
     }
     .back-link:hover {
+      color: #33aaff;
       text-decoration: underline;
     }
   </style>
