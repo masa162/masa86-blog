@@ -27,13 +27,11 @@ export const adminPage = (posts: Post[]) => {
       <h3 id="editorTitle">新規記事作成</h3>
       <form id="postForm" onsubmit="savePost(event)">
         <input type="hidden" id="editingSlug" value="">
+        <input type="hidden" id="slug" value="">
 
-        <div style="margin-bottom: 1rem;">
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Slug (URL識別子)</label>
-          <input type="text" id="slug" required
-                 style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-                 placeholder="例: 0004">
-          <small style="color: #666;">半角英数字とハイフン、アンダースコアのみ</small>
+        <div id="slugDisplay" style="display: none; margin-bottom: 1rem; padding: 0.75rem; background: #e8f5e9; border: 1px solid #4caf50; border-radius: 4px;">
+          <strong>Slug:</strong> <span id="slugValue" style="font-family: monospace; color: #2e7d32;"></span>
+          <small style="display: block; margin-top: 0.25rem; color: #666;">（自動生成されました）</small>
         </div>
 
         <div style="margin-bottom: 1rem;">
@@ -64,8 +62,9 @@ export const adminPage = (posts: Post[]) => {
       </form>
     </div>
 
-    <div style="margin-bottom: 1rem;">
+    <div style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center;">
       <button onclick="showNewPostForm()" class="primary">新規記事作成</button>
+      <a href="/admin/notes" style="color: #0066cc; text-decoration: none; font-size: 14px;">特記事項</a>
     </div>
 
     <table>
@@ -79,61 +78,33 @@ export const adminPage = (posts: Post[]) => {
         </tr>
       </thead>
       <tbody>
-        ${postsTable || '<tr><td colspan="5">記事がありません</td></tr>'}
+        ${html([postsTable]) || html`<tr><td colspan="5">記事がありません</td></tr>`}
       </tbody>
     </table>
 
-    <h3 style="margin-top: 2rem;">API使用例</h3>
-    <pre style="background: #f0f0f0; padding: 1rem; border-radius: 4px; overflow-x: auto;">
-# 記事一覧取得
-curl https://masa86-blog.workers.dev/api/posts
-
-# 記事詳細取得
-curl https://masa86-blog.workers.dev/api/posts/0001
-
-# 記事作成（要認証）
-curl -X POST https://masa86-blog.workers.dev/api/posts \\
-  -H "Authorization: Basic $(echo -n 'admin:password' | base64)" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "slug": "0004",
-    "title": "新しい記事",
-    "content": "# 内容\\n\\nMarkdown形式で書けます",
-    "tags": ["技術", "ブログ"]
-  }'
-
-# 記事更新（要認証）
-curl -X PUT https://masa86-blog.workers.dev/api/posts/0004 \\
-  -H "Authorization: Basic $(echo -n 'admin:password' | base64)" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "title": "更新されたタイトル",
-    "content": "更新された内容"
-  }'
-
-# 記事削除（要認証）
-curl -X DELETE https://masa86-blog.workers.dev/api/posts/0004 \\
-  -H "Authorization: Basic $(echo -n 'admin:password' | base64)"
-    </pre>
-
     <script>
-      const ADMIN_USERNAME = 'mn';
-      let cachedPassword = null;
-
-      function getAuthHeader() {
-        if (!cachedPassword) {
-          cachedPassword = prompt('パスワードを入力してください:');
-          if (!cachedPassword) return null;
-        }
-        return 'Basic ' + btoa(ADMIN_USERNAME + ':' + cachedPassword);
-      }
-
-      function showNewPostForm() {
+      async function showNewPostForm() {
         document.getElementById('editor').style.display = 'block';
         document.getElementById('editorTitle').textContent = '新規記事作成';
         document.getElementById('postForm').reset();
         document.getElementById('editingSlug').value = '';
-        document.getElementById('slug').disabled = false;
+
+        // 次のSlug番号を取得
+        try {
+          const response = await fetch('/admin/next-slug', {
+            credentials: 'include'
+          });
+          if (response.ok) {
+            const data = await response.json();
+            document.getElementById('slug').value = data.nextSlug;
+            document.getElementById('slugValue').textContent = data.nextSlug;
+            document.getElementById('slugDisplay').style.display = 'block';
+          } else {
+            alert('Slug番号の取得に失敗しました');
+          }
+        } catch (err) {
+          alert('Slug番号の取得に失敗しました: ' + err.message);
+        }
       }
 
       function cancelEdit() {
@@ -143,7 +114,9 @@ curl -X DELETE https://masa86-blog.workers.dev/api/posts/0004 \\
 
       async function editPost(slug) {
         try {
-          const response = await fetch(\`/api/posts/\${slug}\`);
+          const response = await fetch(\`/api/posts/\${slug}\`, {
+            credentials: 'include'
+          });
           if (!response.ok) throw new Error('記事の取得に失敗しました');
 
           const data = await response.json();
@@ -153,7 +126,8 @@ curl -X DELETE https://masa86-blog.workers.dev/api/posts/0004 \\
           document.getElementById('editorTitle').textContent = '記事編集';
           document.getElementById('editingSlug').value = slug;
           document.getElementById('slug').value = post.slug;
-          document.getElementById('slug').disabled = true;
+          document.getElementById('slugValue').textContent = post.slug;
+          document.getElementById('slugDisplay').style.display = 'block';
           document.getElementById('title').value = post.title;
           document.getElementById('content').value = post.content;
 
@@ -168,9 +142,6 @@ curl -X DELETE https://masa86-blog.workers.dev/api/posts/0004 \\
 
       async function savePost(event) {
         event.preventDefault();
-
-        const authHeader = getAuthHeader();
-        if (!authHeader) return;
 
         const editingSlug = document.getElementById('editingSlug').value;
         const slug = document.getElementById('slug').value;
@@ -191,9 +162,9 @@ curl -X DELETE https://masa86-blog.workers.dev/api/posts/0004 \\
           const response = await fetch(url, {
             method,
             headers: {
-              'Authorization': authHeader,
               'Content-Type': 'application/json'
             },
+            credentials: 'include',
             body: JSON.stringify(body)
           });
 
@@ -203,9 +174,6 @@ curl -X DELETE https://masa86-blog.workers.dev/api/posts/0004 \\
           } else {
             const error = await response.json();
             alert('保存に失敗しました: ' + (error.error || 'Unknown error'));
-            if (response.status === 401) {
-              cachedPassword = null;
-            }
           }
         } catch (err) {
           alert('保存に失敗しました: ' + err.message);
@@ -215,15 +183,10 @@ curl -X DELETE https://masa86-blog.workers.dev/api/posts/0004 \\
       async function deletePost(slug) {
         if (!confirm('本当に削除しますか？')) return;
 
-        const authHeader = getAuthHeader();
-        if (!authHeader) return;
-
         try {
           const response = await fetch(\`/api/posts/\${slug}\`, {
             method: 'DELETE',
-            headers: {
-              'Authorization': authHeader
-            }
+            credentials: 'include'
           });
 
           if (response.ok) {
@@ -232,9 +195,6 @@ curl -X DELETE https://masa86-blog.workers.dev/api/posts/0004 \\
           } else {
             const error = await response.json();
             alert('削除に失敗しました: ' + (error.error || 'Unknown error'));
-            if (response.status === 401) {
-              cachedPassword = null;
-            }
           }
         } catch (err) {
           alert('削除に失敗しました: ' + err.message);

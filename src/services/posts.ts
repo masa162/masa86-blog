@@ -240,3 +240,124 @@ export async function getPostsByYearMonth(db: D1Database, year: number, month: n
     tags: JSON.parse(post.tags)
   }));
 }
+
+export async function getNextSlugNumber(db: D1Database): Promise<string> {
+  const drizzleDb = drizzle(db);
+  const allPosts = await drizzleDb
+    .select({ slug: posts.slug })
+    .from(posts);
+
+  // 既存のslugから数値部分を抽出し、最大値を取得
+  let maxNumber = 0;
+  allPosts.forEach(post => {
+    const match = post.slug.match(/^(\d+)$/);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (num > maxNumber) {
+        maxNumber = num;
+      }
+    }
+  });
+
+  // 次の番号を4桁ゼロパディングで返す
+  const nextNumber = maxNumber + 1;
+  return String(nextNumber).padStart(4, '0');
+}
+
+export interface HierarchicalArchive {
+  year: number;
+  months: {
+    month: number;
+    label: string;
+    count: number;
+    posts: {
+      slug: string;
+      title: string;
+      createdAt: string;
+    }[];
+  }[];
+}
+
+export async function getAdjacentPosts(db: D1Database, currentSlug: string): Promise<{ prev: Post | null; next: Post | null }> {
+  const drizzleDb = drizzle(db);
+
+  // すべての記事を作成日時順（降順）で取得
+  const allPosts = await drizzleDb
+    .select()
+    .from(posts)
+    .orderBy(desc(posts.createdAt));
+
+  // 現在の記事のインデックスを見つける
+  const currentIndex = allPosts.findIndex(post => post.slug === currentSlug);
+
+  if (currentIndex === -1) {
+    return { prev: null, next: null };
+  }
+
+  // 前の記事（新しい記事）= index - 1
+  const prevPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
+
+  // 次の記事（古い記事）= index + 1
+  const nextPost = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
+
+  return {
+    prev: prevPost ? { ...prevPost, tags: JSON.parse(prevPost.tags) } : null,
+    next: nextPost ? { ...nextPost, tags: JSON.parse(nextPost.tags) } : null
+  };
+}
+
+export async function getHierarchicalArchives(db: D1Database): Promise<HierarchicalArchive[]> {
+  const drizzleDb = drizzle(db);
+  const allPosts = await drizzleDb
+    .select({
+      slug: posts.slug,
+      title: posts.title,
+      createdAt: posts.createdAt
+    })
+    .from(posts)
+    .orderBy(desc(posts.createdAt));
+
+  // 年→月→記事の階層構造を構築
+  const yearMap = new Map<number, Map<number, { slug: string; title: string; createdAt: string }[]>>();
+
+  allPosts.forEach(post => {
+    const date = new Date(post.createdAt);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+
+    if (!yearMap.has(year)) {
+      yearMap.set(year, new Map());
+    }
+
+    const monthMap = yearMap.get(year)!;
+    if (!monthMap.has(month)) {
+      monthMap.set(month, []);
+    }
+
+    monthMap.get(month)!.push({
+      slug: post.slug,
+      title: post.title,
+      createdAt: post.createdAt
+    });
+  });
+
+  // Map を配列に変換してソート
+  const result: HierarchicalArchive[] = [];
+
+  Array.from(yearMap.entries())
+    .sort((a, b) => b[0] - a[0]) // 年を降順でソート
+    .forEach(([year, monthMap]) => {
+      const months = Array.from(monthMap.entries())
+        .sort((a, b) => b[0] - a[0]) // 月を降順でソート
+        .map(([month, postList]) => ({
+          month,
+          label: `${month}月`,
+          count: postList.length,
+          posts: postList
+        }));
+
+      result.push({ year, months });
+    });
+
+  return result;
+}

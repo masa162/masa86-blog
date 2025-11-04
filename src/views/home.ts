@@ -1,4 +1,5 @@
 import { html } from 'hono/html';
+import { marked } from 'marked';
 import type { Post } from '../db/schema';
 
 interface PaginationOptions {
@@ -61,14 +62,38 @@ export const homePage = (posts: Post[], options?: PaginationOptions) => {
       `<span class="tag">${tag}</span>`
     ).join('');
 
-    return html`
+    // MarkdownをHTMLに変換
+    const htmlContent = marked.parse(post.content) as string;
+
+    // サムネイル画像を抽出（最初の画像またはYouTube）
+    let thumbnailHtml = '';
+
+    // 画像を探す
+    const imgMatch = htmlContent.match(/<img[^>]+src="([^"]+)"[^>]*>/i);
+    if (imgMatch) {
+      thumbnailHtml = `<div style="margin: 10px 0;"><img src="${imgMatch[1]}" alt="" style="max-width: 100%; height: auto; border-radius: 4px;"></div>`;
+    } else {
+      // YouTubeショートコードを探す
+      const youtubeMatch = post.content.match(/\{\{<\s*youtube\s+([a-zA-Z0-9_-]+)\s*>\}\}/);
+      if (youtubeMatch) {
+        const videoId = youtubeMatch[1];
+        thumbnailHtml = `<div style="margin: 10px 0;"><img src="https://img.youtube.com/vi/${videoId}/mqdefault.jpg" alt="YouTube" style="max-width: 100%; height: auto; border-radius: 4px;"></div>`;
+      }
+    }
+
+    // プレーンテキストを抽出
+    const plainText = htmlContent.replace(/<[^>]*>/g, '').replace(/\n/g, ' ');
+    const preview = plainText.substring(0, 150) + (plainText.length > 150 ? '...' : '');
+
+    return `
       <article>
         <h2><a href="/posts/${post.slug}">${post.title}</a></h2>
         <div class="post-meta" style="display: block; background: transparent; color: #666666; font-size: 12px; margin: 6px 0;">
           ${new Date(post.createdAt).toLocaleDateString('ja-JP')}
         </div>
+        ${thumbnailHtml}
         <div class="content" style="color: #333333; font-size: 13px; line-height: 1.5; margin-bottom: 10px;">
-          ${post.content.substring(0, 150).replace(/\n/g, ' ').replace(/<[^>]*>/g, '')}${post.content.length > 150 ? '...' : ''}
+          ${preview}
         </div>
         <div style="margin-bottom: 10px;">${tagsHtml}</div>
       </article>
@@ -79,22 +104,21 @@ export const homePage = (posts: Post[], options?: PaginationOptions) => {
   const paginationHtml = options && options.totalPages > 1 ? html`
     <div style="display: flex; justify-content: center; gap: 15px; margin-top: 30px; padding: 15px 0; align-items: center;">
       ${options.page > 1
-        ? `<a href="/?page=${options.page - 1}${buildQueryString(options)}" style="padding: 8px 16px; font-size: 14px; background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px;">← 前へ</a>`
-        : '<span style="padding: 8px 16px; font-size: 14px; color: #cccccc; border: 1px solid #f0f0f0; border-radius: 4px; background: #fafafa;">← 前へ</span>'
+        ? html`<a href="/?page=${options.page - 1}${buildQueryString(options)}" style="padding: 8px 16px; font-size: 14px; background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px;">← 前へ</a>`
+        : html`<span style="padding: 8px 16px; font-size: 14px; color: #cccccc; border: 1px solid #f0f0f0; border-radius: 4px; background: #fafafa;">← 前へ</span>`
       }
       <span style="padding: 8px 16px; font-size: 14px; color: #666666; font-weight: 600;">
         ${options.page} / ${options.totalPages}
       </span>
       ${options.page < options.totalPages
-        ? `<a href="/?page=${options.page + 1}${buildQueryString(options)}" style="padding: 8px 16px; font-size: 14px; background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px;">次へ →</a>`
-        : '<span style="padding: 8px 16px; font-size: 14px; color: #cccccc; border: 1px solid #f0f0f0; border-radius: 4px; background: #fafafa;">次へ →</span>'
+        ? html`<a href="/?page=${options.page + 1}${buildQueryString(options)}" style="padding: 8px 16px; font-size: 14px; background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px;">次へ →</a>`
+        : html`<span style="padding: 8px 16px; font-size: 14px; color: #cccccc; border: 1px solid #f0f0f0; border-radius: 4px; background: #fafafa;">次へ →</span>`
       }
     </div>
   ` : '';
 
   return html`
-    ${searchFormHtml}
-    ${postsHtml || '<p>記事がまだありません。</p>'}
+    ${html([postsHtml]) || '<p>記事がまだありません。</p>'}
     ${paginationHtml}
   `;
 };

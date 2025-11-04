@@ -1,6 +1,8 @@
 import { Hono } from 'hono';
+import { html } from 'hono/html';
+import { marked } from 'marked';
 import * as postService from '../services/posts';
-import { layout, type SEOMetadata } from '../views/layout';
+import { layout, type SEOMetadata, type SidebarData } from '../views/layout';
 import { homePage } from '../views/home';
 import { postPage } from '../views/post';
 import type { Env } from '../types';
@@ -27,6 +29,8 @@ publicRoutes.get('/', async (c) => {
     });
 
     const tags = await postService.getAllTags(c.env.DB);
+    const hierarchicalArchives = await postService.getHierarchicalArchives(c.env.DB);
+
     const content = homePage(result.posts, {
       total: result.total,
       page,
@@ -46,7 +50,12 @@ publicRoutes.get('/', async (c) => {
       type: 'website'
     };
 
-    return c.html(layout('ホーム', content, seo));
+    const sidebar: SidebarData = {
+      tags,
+      hierarchicalArchives
+    };
+
+    return c.html(layout('ホーム', content, seo, sidebar));
   } catch (error) {
     console.error('[ERROR] GET /:', error);
     return c.html(layout('エラー', '<h2>記事の取得に失敗しました</h2>'), 500);
@@ -63,7 +72,10 @@ publicRoutes.get('/posts/:slug', async (c) => {
       return c.html(layout('Not Found', '<h2>記事が見つかりません</h2><a href="/" class="back-link">← ホームに戻る</a>'), 404);
     }
 
-    const content = postPage(post);
+    // 前後の記事を取得
+    const adjacent = await postService.getAdjacentPosts(c.env.DB, slug);
+
+    const content = postPage(post, adjacent);
 
     const tags = Array.isArray(post.tags) ? post.tags : JSON.parse(post.tags as string);
     const description = post.content.substring(0, 160).replace(/\n/g, ' ') + '...';
@@ -78,7 +90,16 @@ publicRoutes.get('/posts/:slug', async (c) => {
       modifiedTime: post.updatedAt
     };
 
-    return c.html(layout(post.title, content, seo));
+    const allTags = await postService.getAllTags(c.env.DB);
+    const hierarchicalArchives = await postService.getHierarchicalArchives(c.env.DB);
+
+    const sidebar: SidebarData = {
+      tags: allTags,
+      hierarchicalArchives,
+      currentSlug: slug
+    };
+
+    return c.html(layout(post.title, content, seo, sidebar));
   } catch (error) {
     console.error('[ERROR] GET /posts/:slug:', error);
     return c.html(layout('エラー', '<h2>記事の取得に失敗しました</h2>'), 500);
@@ -129,22 +150,47 @@ Sitemap: https://masa86-blog.belong2jazz.workers.dev/sitemap.xml`;
 // アーカイブページ
 publicRoutes.get('/archive', async (c) => {
   try {
-    const archives = await postService.getArchives(c.env.DB);
+    const hierarchicalArchives = await postService.getHierarchicalArchives(c.env.DB);
 
-    const content = `
+    const archiveTreeHtml = hierarchicalArchives.map((yearData, yearIndex) => `
+      <div class="archive-year" style="margin-bottom: 20px;">
+        <div class="archive-year-header" onclick="toggleYear(${yearIndex})" style="font-size: 20px; font-weight: bold;">
+          <span class="expand-icon" id="year-icon-${yearIndex}">▼</span>
+          ${yearData.year}年
+        </div>
+        <div class="archive-months" id="year-${yearIndex}">
+          ${yearData.months.map((monthData, monthIndex) => `
+            <div class="archive-month">
+              <div class="archive-month-header" onclick="toggleMonth(${yearIndex}, ${monthIndex})" style="font-size: 16px;">
+                <span class="expand-icon" id="month-icon-${yearIndex}-${monthIndex}">▼</span>
+                ${monthData.label} (${monthData.count}件)
+              </div>
+              <div class="archive-posts" id="month-${yearIndex}-${monthIndex}">
+                ${monthData.posts.map(post =>
+                  `<a href="/posts/${post.slug}" class="archive-post">・${post.title}</a>`
+                ).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+
+    const content = html`
       <h2>記事アーカイブ</h2>
-      <div style="background: white; padding: 2rem; border-radius: 8px; margin-top: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        ${archives.map(archive => `
-          <div style="margin-bottom: 1rem; padding: 1rem; border-bottom: 1px solid #eee;">
-            <a href="/archive/${archive.year}/${archive.month}" style="font-size: 1.1rem; color: #0066cc; text-decoration: none;">
-              ${archive.label} (${archive.count}件)
-            </a>
-          </div>
-        `).join('')}
+      <div class="archive-tree" style="margin-top: 1.5rem;">
+        ${html([archiveTreeHtml])}
       </div>
     `;
 
-    return c.html(layout('アーカイブ', content));
+    const tags = await postService.getAllTags(c.env.DB);
+
+    const sidebar: SidebarData = {
+      tags,
+      hierarchicalArchives
+    };
+
+    return c.html(layout('アーカイブ', content, undefined, sidebar));
   } catch (error) {
     console.error('[ERROR] GET /archive:', error);
     return c.html(layout('エラー', '<h2>アーカイブの取得に失敗しました</h2>'), 500);
@@ -169,6 +215,11 @@ publicRoutes.get('/archive/:year/:month', async (c) => {
         `<span class="tag">${tag}</span>`
       ).join('');
 
+      // MarkdownをHTMLに変換してプレーンテキストを抽出
+      const htmlContent = marked.parse(post.content) as string;
+      const plainText = htmlContent.replace(/<[^>]*>/g, '').replace(/\n/g, ' ');
+      const preview = plainText.substring(0, 150) + (plainText.length > 150 ? '...' : '');
+
       return `
         <article>
           <h2><a href="/posts/${post.slug}">${post.title}</a></h2>
@@ -177,7 +228,7 @@ publicRoutes.get('/archive/:year/:month', async (c) => {
           </div>
           <div style="margin-bottom: 0.5rem;">${tagsHtml}</div>
           <div class="content" style="max-height: 150px; overflow: hidden;">
-            ${post.content.substring(0, 200)}${post.content.length > 200 ? '...' : ''}
+            ${preview}
           </div>
           <a href="/posts/${post.slug}">続きを読む →</a>
         </article>
@@ -190,7 +241,15 @@ publicRoutes.get('/archive/:year/:month', async (c) => {
       ${postsHtml || '<p>この月の記事はありません。</p>'}
     `;
 
-    return c.html(layout(`${year}年${month}月の記事`, content));
+    const tags = await postService.getAllTags(c.env.DB);
+    const hierarchicalArchives = await postService.getHierarchicalArchives(c.env.DB);
+
+    const sidebar: SidebarData = {
+      tags,
+      hierarchicalArchives
+    };
+
+    return c.html(layout(`${year}年${month}月の記事`, content, undefined, sidebar));
   } catch (error) {
     console.error('[ERROR] GET /archive/:year/:month:', error);
     return c.html(layout('エラー', '<h2>記事の取得に失敗しました</h2>'), 500);

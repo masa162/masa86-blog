@@ -2,6 +2,9 @@ name = "masa86-blog"
 main = "src/index.ts"
 compatibility_date = "2025-04-01"
 
+[assets]
+directory = "./web/public"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "masa86-blog-db"

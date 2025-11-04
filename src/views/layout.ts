@@ -11,12 +11,31 @@ export interface SEOMetadata {
   modifiedTime?: string;
 }
 
-export const layout = (title: string, content: string, seo?: SEOMetadata) => {
-  const fullTitle = seo?.title || `${title} | masa86 Blog`;
-  const description = seo?.description || 'シンプルで高速なブログシステム powered by Hono + Drizzle + Cloudflare Workers';
-  const keywords = seo?.keywords?.join(', ') || 'ブログ, 技術, プログラミング';
+export interface SidebarData {
+  tags?: string[];
+  archives?: { year: number; month: number; count: number; label: string }[];
+  hierarchicalArchives?: {
+    year: number;
+    months: {
+      month: number;
+      label: string;
+      count: number;
+      posts: {
+        slug: string;
+        title: string;
+        createdAt: string;
+      }[];
+    }[];
+  }[];
+  currentSlug?: string;
+}
+
+export const layout = (title: string, content: string, seo?: SEOMetadata, sidebar?: SidebarData) => {
+  const fullTitle = seo?.title || `${title} | 中山雑記`;
+  const description = seo?.description || '中山正之の雑記ブログ';
+  const keywords = seo?.keywords?.join(', ') || 'ブログ, 技術, プログラミング, 雑記';
   const ogUrl = seo?.ogUrl || 'https://masa86-blog.belong2jazz.workers.dev';
-  const ogImage = seo?.ogImage || 'https://masa86-blog.belong2jazz.workers.dev/og-image.png';
+  const ogImage = seo?.ogImage || '';  // OGP画像はテキストのみ
   const ogType = seo?.type || 'website';
 
   return html`<!DOCTYPE html>
@@ -26,27 +45,30 @@ export const layout = (title: string, content: string, seo?: SEOMetadata) => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${fullTitle}</title>
 
+  <!-- Favicon -->
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
   <!-- SEO Meta Tags -->
   <meta name="description" content="${description}">
   <meta name="keywords" content="${keywords}">
-  <meta name="author" content="masa86">
+  <meta name="author" content="中山正之">
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="${ogType}">
   <meta property="og:url" content="${ogUrl}">
   <meta property="og:title" content="${fullTitle}">
   <meta property="og:description" content="${description}">
-  <meta property="og:image" content="${ogImage}">
-  <meta property="og:site_name" content="masa86 Blog">
-  ${seo?.publishedTime ? `<meta property="article:published_time" content="${seo.publishedTime}">` : ''}
-  ${seo?.modifiedTime ? `<meta property="article:modified_time" content="${seo.modifiedTime}">` : ''}
+  ${ogImage ? html`<meta property="og:image" content="${ogImage}">` : ''}
+  <meta property="og:site_name" content="中山雑記">
+  ${seo?.publishedTime ? html`<meta property="article:published_time" content="${seo.publishedTime}">` : ''}
+  ${seo?.modifiedTime ? html`<meta property="article:modified_time" content="${seo.modifiedTime}">` : ''}
 
   <!-- Twitter -->
-  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:card" content="summary">
   <meta property="twitter:url" content="${ogUrl}">
   <meta property="twitter:title" content="${fullTitle}">
   <meta property="twitter:description" content="${description}">
-  <meta property="twitter:image" content="${ogImage}">
+  ${ogImage ? html`<meta property="twitter:image" content="${ogImage}">` : ''}
 
   <!-- Canonical URL -->
   <link rel="canonical" href="${ogUrl}">
@@ -57,22 +79,56 @@ export const layout = (title: string, content: string, seo?: SEOMetadata) => {
       font-size: 16px;
       line-height: 1.6;
       color: #333333;
+      background: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
       max-width: 860px;
       margin: 0 auto;
       padding: 20px;
-      background: #ffffff;
+    }
+    .content-wrapper {
+      display: flex;
+      gap: 20px;
+    }
+    .main-content {
+      flex: 1;
+      min-width: 0;
+    }
+    .sidebar {
+      width: 220px;
+      flex-shrink: 0;
+    }
+    @media (max-width: 768px) {
+      .content-wrapper {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+      }
+      .container {
+        padding: 10px;
+      }
     }
     header {
-      margin-bottom: 20px;
-      padding-bottom: 15px;
-      border-bottom: 1px solid #e0e0e0;
+      margin-bottom: 30px;
+      padding-bottom: 22px;
     }
     h1 {
       font-family: 'Helvetica Neue', Arial, sans-serif;
       font-size: 32px;
       font-weight: 700;
-      margin-bottom: 10px;
+      margin-bottom: 0;
       color: #333333;
+    }
+    .site-title {
+      color: #333333;
+      text-decoration: none;
+    }
+    .site-title:hover {
+      color: #0066cc;
+      text-decoration: none;
     }
     h2 {
       font-size: 24px;
@@ -97,25 +153,20 @@ export const layout = (title: string, content: string, seo?: SEOMetadata) => {
       background: #ffffff;
       padding: 15px;
       margin-bottom: 15px;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      transition: box-shadow 0.2s ease, transform 0.2s ease;
-    }
-    article:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      transform: translateY(-2px);
+      border-bottom: 1px solid #e0e0e0;
     }
     article h2 {
-      margin: 0 0 6px 0;
+      margin: 0 0 20px 0;
     }
     article h2 a {
       text-decoration: none;
-      color: #333333;
-      font-size: 16px;
+      color: #2288bb;
+      font-size: 24px;
       font-weight: 600;
     }
     article h2 a:hover {
-      color: #0066cc;
+      color: #33aaff;
+      text-decoration: underline;
     }
     .post-meta {
       display: inline-block;
@@ -142,7 +193,7 @@ export const layout = (title: string, content: string, seo?: SEOMetadata) => {
     }
     .content h1 {
       color: #2d4a3a;
-      font-size: 28px;
+      font-size: 24px;
       font-weight: 700;
       margin: 30px 0 20px 0;
       padding-bottom: 8px;
@@ -185,6 +236,12 @@ export const layout = (title: string, content: string, seo?: SEOMetadata) => {
       padding: 15px;
       border-radius: 5px;
       overflow-x: auto;
+      margin: 15px 0;
+    }
+    .content img {
+      max-width: 100%;
+      height: auto;
+      display: block;
       margin: 15px 0;
     }
     table {
@@ -277,20 +334,397 @@ export const layout = (title: string, content: string, seo?: SEOMetadata) => {
       color: #004499;
       text-decoration: underline;
     }
+    .sidebar-section {
+      margin-bottom: 30px;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 4px;
+    }
+    .sidebar-section h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333333;
+      margin: 0 0 15px 0;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+    .sidebar-section ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .sidebar-section li {
+      margin-bottom: 8px;
+    }
+    .sidebar-section a {
+      font-size: 14px;
+      color: #0066cc;
+      text-decoration: none;
+    }
+    .sidebar-section a:hover {
+      color: #004499;
+      text-decoration: underline;
+    }
+    .sidebar-section p {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #666666;
+      margin: 0 0 10px 0;
+    }
+    .tag-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .tag-cloud a {
+      display: inline-block;
+      background: #f0f0f0;
+      color: #666666;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      text-decoration: none;
+    }
+    .tag-cloud a:hover {
+      background: #e0e0e0;
+      color: #333333;
+    }
+    /* 階層型アーカイブ */
+    .archive-tree {
+      font-size: 14px;
+    }
+    .archive-year {
+      margin-bottom: 10px;
+    }
+    .archive-year-header {
+      cursor: pointer;
+      user-select: none;
+      padding: 5px 0;
+      font-weight: 600;
+      color: #333333;
+    }
+    .archive-year-header:hover {
+      color: #0066cc;
+    }
+    .archive-months {
+      padding-left: 20px;
+      margin-top: 5px;
+    }
+    .archive-months.collapsed {
+      display: none;
+    }
+    .archive-month {
+      margin-bottom: 8px;
+    }
+    .archive-month-header {
+      cursor: pointer;
+      user-select: none;
+      padding: 3px 0;
+      color: #555555;
+    }
+    .archive-month-header:hover {
+      color: #0066cc;
+    }
+    .archive-posts {
+      padding-left: 20px;
+      margin-top: 5px;
+    }
+    .archive-posts.collapsed {
+      display: none;
+    }
+    .archive-post {
+      display: block;
+      padding: 2px 0;
+      color: #0066cc;
+      text-decoration: none;
+      font-size: 13px;
+    }
+    .archive-post:hover {
+      color: #004499;
+      text-decoration: underline;
+    }
+    .archive-post.current-post {
+      font-weight: bold;
+      color: #ff6600;
+      background-color: #fff3e0;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    .expand-icon {
+      display: inline-block;
+      width: 12px;
+      font-size: 12px;
+      margin-right: 5px;
+    }
+    /* スマホ用 ↑ ボタン */
+    #scroll-to-top {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      background: #0066cc;
+      color: #ffffff;
+      border: none;
+      border-radius: 50%;
+      font-size: 24px;
+      cursor: pointer;
+      display: none;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    #scroll-to-top:hover {
+      background: #004499;
+    }
+    /* ハンバーガーメニュー */
+    #hamburger-menu {
+      display: none;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      flex-direction: column;
+      justify-content: space-around;
+      cursor: pointer;
+      z-index: 1001;
+    }
+    #hamburger-menu span {
+      display: block;
+      width: 100%;
+      height: 3px;
+      background: #333;
+      transition: 0.3s;
+    }
+    #hamburger-menu.active span:nth-child(1) {
+      transform: rotate(45deg) translateY(12px);
+    }
+    #hamburger-menu.active span:nth-child(2) {
+      opacity: 0;
+    }
+    #hamburger-menu.active span:nth-child(3) {
+      transform: rotate(-45deg) translateY(-12px);
+    }
+    @media (max-width: 768px) {
+      body {
+        font-size: 16px;
+        line-height: 1.6;
+      }
+      h1 {
+        font-size: 32px;
+      }
+      article h2 a {
+        font-size: 22px;
+      }
+      article {
+        padding: 15px;
+        margin-bottom: 45px;
+      }
+      header {
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+      }
+      #scroll-to-top {
+        display: block;
+      }
+      #hamburger-menu {
+        display: flex;
+      }
+      .sidebar {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 80%;
+        height: 100vh;
+        background: #fff;
+        box-shadow: -2px 0 8px rgba(0, 0, 0, 0.2);
+        overflow-y: auto;
+        transition: right 0.3s ease;
+        z-index: 1000;
+        padding: 80px 20px 20px 20px;
+      }
+      .sidebar.active {
+        right: 0;
+      }
+    }
   </style>
 </head>
 <body>
-  <header>
-    <h1>masa86 Blog</h1>
-    <nav>
-      <a href="/">ホーム</a>
-      <a href="/archive">アーカイブ</a>
-      <a href="/admin">管理画面</a>
-    </nav>
-  </header>
-  <main>
-    ${content}
-  </main>
+  <div class="container">
+    <header>
+      <h1><a href="/" class="site-title">中山雑記</a></h1>
+    </header>
+    <div class="content-wrapper">
+      <main class="main-content">
+        ${content}
+      </main>
+      <aside class="sidebar">
+        <div class="sidebar-section">
+          <div style="text-align: center; margin-bottom: 15px;">
+            <img src="/profile.jpg" alt="中山正之" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+          </div>
+          <p style="font-weight: bold; text-align: center; margin-bottom: 5px;">中山正之</p>
+          <p style="font-size: 12px; color: #666; margin-bottom: 3px;">1986年生まれ　神奈川県出身</p>
+          <p style="font-size: 12px; color: #666;">belong2jazz@gmail.com</p>
+          <p style="font-size: 12px; color: #666;">090-2405-5122</p>
+        </div>
+
+        <div class="sidebar-section">
+          <h3>検索</h3>
+          <form method="GET" action="/">
+            <input type="text" name="keyword" placeholder="検索..." style="width: 100%; padding: 6px 8px; font-size: 13px;">
+            <button type="submit" class="primary" style="width: 100%; margin-top: 8px;">検索</button>
+          </form>
+        </div>
+
+        <div class="sidebar-section">
+          <h3>記事一覧</h3>
+          <ul>
+            <li><a href="/">すべての記事</a></li>
+            <li><a href="/archive">アーカイブ</a></li>
+          </ul>
+        </div>
+
+        ${sidebar?.hierarchicalArchives && sidebar.hierarchicalArchives.length > 0 ? html`
+        <div class="sidebar-section">
+          <h3>アーカイブ</h3>
+          <div class="archive-tree">
+            ${sidebar.hierarchicalArchives.map((yearData, yearIndex) => {
+              let currentYearIndex = -1;
+              let currentMonthIndex = -1;
+
+              if (sidebar.currentSlug) {
+                yearData.months.forEach((monthData, monthIdx) => {
+                  const foundPost = monthData.posts.find(p => p.slug === sidebar.currentSlug);
+                  if (foundPost) {
+                    currentYearIndex = yearIndex;
+                    currentMonthIndex = monthIdx;
+                  }
+                });
+              }
+
+              const isLatestYear = yearIndex === 0;
+              const isCurrentYear = currentYearIndex === yearIndex;
+              const shouldExpandYear = isLatestYear || isCurrentYear;
+
+              return html`
+                <div class="archive-year">
+                  <div class="archive-year-header" onclick="toggleYear(${yearIndex})">
+                    <span class="expand-icon" id="year-icon-${yearIndex}">${shouldExpandYear ? '▼' : '▶'}</span>
+                    ${yearData.year}年
+                  </div>
+                  <div class="archive-months${shouldExpandYear ? '' : ' collapsed'}" id="year-${yearIndex}">
+                    ${yearData.months.map((monthData, monthIndex) => {
+                      const isLatestMonth = yearIndex === 0 && monthIndex === 0;
+                      const isCurrentMonth = currentYearIndex === yearIndex && currentMonthIndex === monthIndex;
+                      const shouldExpandMonth = isLatestMonth || isCurrentMonth;
+
+                      return html`
+                        <div class="archive-month">
+                          <div class="archive-month-header" onclick="toggleMonth(${yearIndex}, ${monthIndex})">
+                            <span class="expand-icon" id="month-icon-${yearIndex}-${monthIndex}">${shouldExpandMonth ? '▼' : '▶'}</span>
+                            ${monthData.label} (${monthData.count})
+                          </div>
+                          <div class="archive-posts${shouldExpandMonth ? '' : ' collapsed'}" id="month-${yearIndex}-${monthIndex}">
+                            ${monthData.posts.map(post =>
+                              html`<a href="/posts/${post.slug}" class="archive-post${post.slug === sidebar.currentSlug ? ' current-post' : ''}">・${post.title}</a>`
+                            )}
+                          </div>
+                        </div>
+                      `;
+                    })}
+                  </div>
+                </div>
+              `;
+            })}
+          </div>
+        </div>
+        ` : ''}
+
+        ${sidebar?.tags && sidebar.tags.length > 0 ? html`
+        <div class="sidebar-section">
+          <h3>タグ</h3>
+          <div class="tag-cloud">
+            ${sidebar.tags.map(tag =>
+              html`<a href="/?tag=${encodeURIComponent(tag)}">${tag}</a>`
+            )}
+          </div>
+        </div>
+        ` : ''}
+      </aside>
+    </div>
+  </div>
+
+  <!-- ハンバーガーメニュー -->
+  <div id="hamburger-menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <!-- スクロールトップボタン -->
+  <button id="scroll-to-top">↑</button>
+
+  <script>
+    // ハンバーガーメニュー
+    const hamburger = document.getElementById('hamburger-menu');
+    const sidebar = document.querySelector('.sidebar');
+
+    hamburger.addEventListener('click', function() {
+      this.classList.toggle('active');
+      sidebar.classList.toggle('active');
+    });
+
+    // サイドバー外をクリックしたら閉じる
+    document.addEventListener('click', function(event) {
+      if (!sidebar.contains(event.target) && !hamburger.contains(event.target)) {
+        hamburger.classList.remove('active');
+        sidebar.classList.remove('active');
+      }
+    });
+
+    // スクロールトップボタン
+    const scrollBtn = document.getElementById('scroll-to-top');
+
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > 300) {
+        scrollBtn.style.display = 'block';
+      } else {
+        scrollBtn.style.display = 'none';
+      }
+    });
+
+    scrollBtn.addEventListener('click', function() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
+  <script>
+    function toggleYear(yearIndex) {
+      const monthsEl = document.getElementById('year-' + yearIndex);
+      const iconEl = document.getElementById('year-icon-' + yearIndex);
+
+      if (monthsEl.classList.contains('collapsed')) {
+        monthsEl.classList.remove('collapsed');
+        iconEl.textContent = '▼';
+      } else {
+        monthsEl.classList.add('collapsed');
+        iconEl.textContent = '▶';
+      }
+    }
+
+    function toggleMonth(yearIndex, monthIndex) {
+      const postsEl = document.getElementById('month-' + yearIndex + '-' + monthIndex);
+      const iconEl = document.getElementById('month-icon-' + yearIndex + '-' + monthIndex);
+
+      if (postsEl.classList.contains('collapsed')) {
+        postsEl.classList.remove('collapsed');
+        iconEl.textContent = '▼';
+      } else {
+        postsEl.classList.add('collapsed');
+        iconEl.textContent = '▶';
+      }
+    }
+  </script>
 </body>
 </html>`;
 };
