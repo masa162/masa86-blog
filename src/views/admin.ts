@@ -1,7 +1,21 @@
 import { html } from 'hono/html';
 import type { Post } from '../db/schema';
 
-export const adminPage = (posts: Post[]) => {
+interface PaginationInfo {
+  page: number;
+  totalPages: number;
+  total: number;
+  keyword?: string;
+  tag?: string;
+  slug?: string;
+  createdStart?: string;
+  createdEnd?: string;
+  updatedStart?: string;
+  updatedEnd?: string;
+  tags?: string[];  // 全タグリスト
+}
+
+export const adminPage = (posts: Post[], pagination?: PaginationInfo) => {
   const postsTable = posts.map(post => {
     const tags = Array.isArray(post.tags) ? post.tags : JSON.parse(post.tags as string);
     const tagsStr = tags.join(', ');
@@ -19,8 +33,146 @@ export const adminPage = (posts: Post[]) => {
     `;
   }).join('');
 
+  // フィルター条件があるかチェック
+  const hasActiveFilters = pagination && (
+    pagination.keyword || pagination.tag || pagination.slug ||
+    pagination.createdStart || pagination.createdEnd ||
+    pagination.updatedStart || pagination.updatedEnd
+  );
+
+  // ページネーション用クエリ文字列を構築
+  const buildQueryString = (newPage: number): string => {
+    if (!pagination) return `?page=${newPage}`;
+    const params: string[] = [`page=${newPage}`];
+    if (pagination.keyword) params.push(`keyword=${encodeURIComponent(pagination.keyword)}`);
+    if (pagination.tag) params.push(`tag=${encodeURIComponent(pagination.tag)}`);
+    if (pagination.slug) params.push(`slug=${encodeURIComponent(pagination.slug)}`);
+    if (pagination.createdStart) params.push(`createdStart=${pagination.createdStart}`);
+    if (pagination.createdEnd) params.push(`createdEnd=${pagination.createdEnd}`);
+    if (pagination.updatedStart) params.push(`updatedStart=${pagination.updatedStart}`);
+    if (pagination.updatedEnd) params.push(`updatedEnd=${pagination.updatedEnd}`);
+    return '?' + params.join('&');
+  };
+
+  // 検索・フィルターパネル HTML
+  const searchPanelHtml = pagination?.tags ? html`
+    <div style="margin-bottom: 20px;">
+      <button onclick="toggleSearchPanel()" type="button"
+              style="width: 100%; padding: 12px; background: #f5f5f5; border: 1px solid #ddd;
+                     border-radius: 4px; text-align: left; cursor: pointer; font-size: 14px; font-weight: 600;">
+        <span id="searchToggleIcon">${hasActiveFilters ? '▲' : '▼'}</span>
+        検索・フィルター
+        ${hasActiveFilters ? html`<span style="color: #0066cc; font-weight: bold;"> (適用中)</span>` : ''}
+      </button>
+
+      <div id="searchPanel" style="display: ${hasActiveFilters ? 'block' : 'none'};
+                                    background: #fafafa; padding: 20px; border: 1px solid #ddd;
+                                    border-top: none; border-radius: 0 0 4px 4px;">
+        <form method="GET" action="/admin">
+          <!-- Quick Search Row -->
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px;">
+                キーワード検索
+              </label>
+              <input type="text" name="keyword" value="${pagination.keyword || ''}"
+                     placeholder="タイトルまたは本文で検索"
+                     style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px;">
+                Slug/ID検索
+              </label>
+              <input type="text" name="slug" value="${pagination.slug || ''}"
+                     placeholder="例: 0001"
+                     style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+            </div>
+          </div>
+
+          <!-- Tag Filter -->
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px;">
+              タグ
+            </label>
+            <select name="tag" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+              <option value="">すべてのタグ</option>
+              ${pagination.tags.map((t: string) =>
+                `<option value="${t}" ${pagination.tag === t ? 'selected' : ''}>${t}</option>`
+              ).join('')}
+            </select>
+          </div>
+
+          <!-- Date Filters -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div>
+              <label style="display: block; margin-bottom: 8px; font-weight: bold; font-size: 13px;">
+                作成日
+              </label>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="date" name="createdStart" value="${pagination.createdStart || ''}"
+                       style="flex: 1; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;">
+                <span style="color: #666;">〜</span>
+                <input type="date" name="createdEnd" value="${pagination.createdEnd || ''}"
+                       style="flex: 1; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;">
+              </div>
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 8px; font-weight: bold; font-size: 13px;">
+                更新日
+              </label>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="date" name="updatedStart" value="${pagination.updatedStart || ''}"
+                       style="flex: 1; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;">
+                <span style="color: #666;">〜</span>
+                <input type="date" name="updatedEnd" value="${pagination.updatedEnd || ''}"
+                       style="flex: 1; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;">
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <button type="submit" class="primary" style="flex: 0 0 auto;">検索実行</button>
+            <a href="/admin" class="secondary"
+               style="flex: 0 0 auto; padding: 8px 16px; text-decoration: none; display: inline-block; border-radius: 4px;">
+              クリア
+            </a>
+            ${hasActiveFilters ? html`
+              <span style="margin-left: 10px; color: #666; font-size: 13px;">
+                ${pagination.total}件ヒット
+              </span>
+            ` : ''}
+          </div>
+        </form>
+      </div>
+    </div>
+  ` : '';
+
+  // ページネーション HTML
+  const paginationHtml = pagination && pagination.totalPages > 1 ? html`
+    <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 4px;">
+      <div style="color: #666; font-size: 14px;">
+        全${pagination.total}件の記事 (${pagination.page} / ${pagination.totalPages}ページ)
+      </div>
+      <div style="display: flex; gap: 10px;">
+        ${pagination.page > 1
+          ? html`<a href="/admin${buildQueryString(pagination.page - 1)}" style="padding: 8px 16px; background: #0066cc; color: #fff; border-radius: 4px; text-decoration: none;">← 前へ</a>`
+          : html`<span style="padding: 8px 16px; background: #ccc; color: #fff; border-radius: 4px;">← 前へ</span>`
+        }
+        ${pagination.page < pagination.totalPages
+          ? html`<a href="/admin${buildQueryString(pagination.page + 1)}" style="padding: 8px 16px; background: #0066cc; color: #fff; border-radius: 4px; text-decoration: none;">次へ →</a>`
+          : html`<span style="padding: 8px 16px; background: #ccc; color: #fff; border-radius: 4px;">次へ →</span>`
+        }
+      </div>
+    </div>
+  ` : '';
+
   return html`
-    <h2>記事管理</h2>
+    <h2><a href="/admin" style="color: #2d4a3a; text-decoration: none;">記事管理</a></h2>
+
+    ${paginationHtml}
+
+    ${searchPanelHtml}
 
     <!-- 記事作成・編集フォーム -->
     <div id="editor" style="display: none; background: #f8f8f8; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
@@ -82,7 +234,21 @@ export const adminPage = (posts: Post[]) => {
       </tbody>
     </table>
 
+    ${paginationHtml}
+
     <script>
+      function toggleSearchPanel() {
+        const panel = document.getElementById('searchPanel');
+        const icon = document.getElementById('searchToggleIcon');
+        if (panel.style.display === 'none') {
+          panel.style.display = 'block';
+          icon.textContent = '▲';
+        } else {
+          panel.style.display = 'none';
+          icon.textContent = '▼';
+        }
+      }
+
       async function showNewPostForm() {
         document.getElementById('editor').style.display = 'block';
         document.getElementById('editorTitle').textContent = '新規記事作成';

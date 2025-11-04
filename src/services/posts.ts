@@ -5,8 +5,11 @@ import { posts, type Post, type NewPost } from '../db/schema';
 export interface SearchOptions {
   keyword?: string;
   tag?: string;
+  slug?: string;  // Slug直接検索用
   startDate?: string;
   endDate?: string;
+  updatedStartDate?: string;  // 更新日開始
+  updatedEndDate?: string;    // 更新日終了
   limit?: number;
   offset?: number;
 }
@@ -28,6 +31,11 @@ export async function searchPosts(db: D1Database, options: SearchOptions): Promi
   const drizzleDb = drizzle(db);
   const conditions: any[] = [];
 
+  // Slug直接検索（完全一致）
+  if (options.slug) {
+    conditions.push(eq(posts.slug, options.slug));
+  }
+
   // キーワード検索（タイトルまたは本文）
   if (options.keyword) {
     const keyword = `%${options.keyword}%`;
@@ -41,12 +49,20 @@ export async function searchPosts(db: D1Database, options: SearchOptions): Promi
     conditions.push(sql`${posts.tags} LIKE ${'%"' + options.tag + '"%'}`);
   }
 
-  // 日付範囲フィルタ
+  // 作成日範囲フィルタ
   if (options.startDate) {
     conditions.push(sql`${posts.createdAt} >= ${options.startDate}`);
   }
   if (options.endDate) {
     conditions.push(sql`${posts.createdAt} <= ${options.endDate}`);
+  }
+
+  // 更新日範囲フィルタ
+  if (options.updatedStartDate) {
+    conditions.push(sql`${posts.updatedAt} >= ${options.updatedStartDate}`);
+  }
+  if (options.updatedEndDate) {
+    conditions.push(sql`${posts.updatedAt} <= ${options.updatedEndDate}`);
   }
 
   // 条件を組み合わせてクエリ実行

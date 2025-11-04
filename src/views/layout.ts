@@ -728,3 +728,154 @@ export const layout = (title: string, content: string, seo?: SEOMetadata, sideba
 </body>
 </html>`;
 };
+
+// 管理画面専用レイアウト（サイドバーなし）
+export const adminLayout = (title: string, content: string) => {
+  return html`<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title} | 中山雑記 管理画面</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      color: #333333;
+      background: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    header {
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    h1 {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #333333;
+    }
+    h1 a {
+      color: #333333;
+      text-decoration: none;
+    }
+    h1 a:hover {
+      color: #0066cc;
+    }
+    h2 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #2d4a3a;
+    }
+    h2 a {
+      color: #2d4a3a;
+      text-decoration: none;
+    }
+    h2 a:hover {
+      color: #0066cc;
+      text-decoration: underline;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #dddddd;
+    }
+    th {
+      background: #f5f5f5;
+      font-weight: bold;
+      color: #333333;
+      font-size: 14px;
+    }
+    button, .primary, .secondary, .danger {
+      padding: 8px 15px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      border: 1px solid #dddddd;
+      background: #ffffff;
+      color: #666666;
+      cursor: pointer;
+      font-size: 14px;
+      font-family: inherit;
+      border-radius: 4px;
+    }
+    button:hover {
+      background: #f0f0f0;
+    }
+    button.primary {
+      background: #0066cc;
+      color: #ffffff;
+      border-color: #0066cc;
+    }
+    button.primary:hover {
+      background: #004499;
+      border-color: #004499;
+    }
+    button.secondary {
+      background: #999999;
+      color: #ffffff;
+      border-color: #999999;
+    }
+    button.secondary:hover {
+      background: #666666;
+      border-color: #666666;
+    }
+    button.danger {
+      background: #dc3545;
+      color: #ffffff;
+      border-color: #dc3545;
+    }
+    button.danger:hover {
+      background: #c82333;
+      border-color: #c82333;
+    }
+    input[type="text"],
+    input[type="date"],
+    textarea,
+    select {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+    a:hover {
+      color: #004499;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1><a href="/">中山雑記</a></h1>
+      <p style="color: #666; font-size: 14px;">管理画面</p>
+    </header>
+    <main>
+      ${content}
+    </main>
+  </div>
+</body>
+</html>`;
+};
