@@ -1,0 +1,42 @@
+[
+  {
+    "newSlug": "0006",
+    "oldSlug": "20231012",
+    "title": "好きなブログ",
+    "date": "2023-10-12T00:00:00.000Z",
+    "file": "231012.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0007",
+    "oldSlug": "20231015",
+    "title": "葬送のフリーレン",
+    "date": "2023-10-15T00:00:00.000Z",
+    "file": "231015.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0008",
+    "oldSlug": "20231016",
+    "title": "古くていいもの",
+    "date": "2023-10-16T00:00:00.000Z",
+    "file": "231016.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0009",
+    "oldSlug": "20231023",
+    "title": "憧れのブログ",
+    "date": "2023-10-23T00:00:00.000Z",
+    "file": "231023.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0010",
+    "oldSlug": "20231024",
+    "title": "ショップシーラー",
+    "date": "2023-10-24T00:00:00.000Z",
+    "file": "231024.md",
+    "draft": false
+  }
+]

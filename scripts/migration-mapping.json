@@ -1,0 +1,394 @@
+[
+  {
+    "newSlug": "0006",
+    "oldSlug": "20231012",
+    "title": "好きなブログ",
+    "date": "2023-10-12T00:00:00.000Z",
+    "file": "231012.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0007",
+    "oldSlug": "20231015",
+    "title": "葬送のフリーレン",
+    "date": "2023-10-15T00:00:00.000Z",
+    "file": "231015.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0008",
+    "oldSlug": "20231016",
+    "title": "古くていいもの",
+    "date": "2023-10-16T00:00:00.000Z",
+    "file": "231016.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0009",
+    "oldSlug": "20231023",
+    "title": "憧れのブログ",
+    "date": "2023-10-23T00:00:00.000Z",
+    "file": "231023.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0010",
+    "oldSlug": "20231024",
+    "title": "ショップシーラー",
+    "date": "2023-10-24T00:00:00.000Z",
+    "file": "231024.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0011",
+    "oldSlug": "20231027",
+    "title": "summer gate",
+    "date": "2023-10-27T00:00:00.000Z",
+    "file": "231027.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0012",
+    "oldSlug": "20231028",
+    "title": "noteとの出会い",
+    "date": "2023-10-28T00:00:00.000Z",
+    "file": "231028.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0013",
+    "oldSlug": "20231029",
+    "title": "ときがねダム",
+    "date": "2023-10-29T00:00:00.000Z",
+    "file": "231029.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0014",
+    "oldSlug": "20231111",
+    "title": "まめきちまめこ",
+    "date": "2023-11-11T00:00:00.000Z",
+    "file": "231111.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0015",
+    "oldSlug": "20231112",
+    "title": "今日マチ子さん",
+    "date": "2023-11-12T00:00:00.000Z",
+    "file": "231112.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0016",
+    "oldSlug": "20231117",
+    "title": "gravity daze2",
+    "date": "2023-11-17T00:00:00.000Z",
+    "file": "231117.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0017",
+    "oldSlug": "20231118",
+    "title": "HAIさん",
+    "date": "2023-11-18T00:00:00.000Z",
+    "file": "231118.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0018",
+    "oldSlug": "20231125_02",
+    "title": "体がよろこぶ! 「効く」漢方の正体",
+    "date": "2023-11-25T00:00:00.000Z",
+    "file": "231125_02.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0019",
+    "oldSlug": "20231125",
+    "title": "十三機兵防衛圏",
+    "date": "2023-11-25T00:00:00.000Z",
+    "file": "231125.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0020",
+    "oldSlug": "20231128",
+    "title": "Noteの思い出",
+    "date": "2023-11-28T00:00:00.000Z",
+    "file": "231128.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0021",
+    "oldSlug": "20250403",
+    "title": "kindle paper 第12世代",
+    "date": "2025-04-03T00:00:00.000Z",
+    "file": "0403.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0022",
+    "oldSlug": "20250405",
+    "title": "蒲田ニボシマニア",
+    "date": "2025-04-05T00:00:00.000Z",
+    "file": "0405.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0023",
+    "oldSlug": "20250407",
+    "title": "読書について",
+    "date": "2025-04-07T00:00:00.000Z",
+    "file": "0407.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0024",
+    "oldSlug": "20250408",
+    "title": "花もち",
+    "date": "2025-04-08T00:00:00.000Z",
+    "file": "0408.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0025",
+    "oldSlug": "200417",
+    "title": "万葉集とか",
+    "date": "2025-04-17T00:00:00.000Z",
+    "file": "0417.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0026",
+    "oldSlug": "200418",
+    "title": "生田長沢のブックオフとか",
+    "date": "2025-04-18T00:00:00.000Z",
+    "file": "0418.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0027",
+    "oldSlug": "200419",
+    "title": "神保町",
+    "date": "2025-04-19T00:00:00.000Z",
+    "file": "0419.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0028",
+    "oldSlug": "200423",
+    "title": "竹取の湯",
+    "date": "2025-04-23T00:00:00.000Z",
+    "file": "0423.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0029",
+    "oldSlug": "200424",
+    "title": "豆腐",
+    "date": "2025-04-24T00:00:00.000Z",
+    "file": "0424.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0030",
+    "oldSlug": "200502",
+    "title": "メルカリ整理",
+    "date": "2025-05-02T00:00:00.000Z",
+    "file": "0502.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0031",
+    "oldSlug": "200506",
+    "title": "竹取の湯",
+    "date": "2025-05-06T00:00:00.000Z",
+    "file": "0506.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0032",
+    "oldSlug": "200510",
+    "title": "ニュータンタンメン",
+    "date": "2025-05-10T00:00:00.000Z",
+    "file": "0510.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0033",
+    "oldSlug": "200514",
+    "title": "丸源、稲城図書館、コメダ",
+    "date": "2025-05-14T00:00:00.000Z",
+    "file": "0514.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0034",
+    "oldSlug": "200517",
+    "title": "町田商店",
+    "date": "2025-05-17T00:00:00.000Z",
+    "file": "0517.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0035",
+    "oldSlug": "20250518",
+    "title": "葉積緑地",
+    "date": "2025-05-18T00:00:00.000Z",
+    "file": "0518_2.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0036",
+    "oldSlug": "200518",
+    "title": "TOEIC、青山学院大学、町田、",
+    "date": "2025-05-18T00:00:00.000Z",
+    "file": "0518.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0037",
+    "oldSlug": "20250519",
+    "title": "エアコン掃除、pixel4aメルカリ出品",
+    "date": "2025-05-19T00:00:00.000Z",
+    "file": "0519.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0038",
+    "oldSlug": "20250521",
+    "title": "花景の湯、丸源",
+    "date": "2025-05-21T00:00:00.000Z",
+    "file": "0521.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0039",
+    "oldSlug": "20250522",
+    "title": "献血",
+    "date": "2025-05-22T00:00:00.000Z",
+    "file": "0522.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0040",
+    "oldSlug": "20250529",
+    "title": "くら寿司",
+    "date": "2025-05-29T00:00:00.000Z",
+    "file": "0529.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0041",
+    "oldSlug": "20250530",
+    "title": "トリセツ",
+    "date": "2025-05-30T00:00:00.000Z",
+    "file": "0530.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0042",
+    "oldSlug": "20250601",
+    "title": "麻生図書館、みどりの本",
+    "date": "2025-06-01T00:00:00.000Z",
+    "file": "0601.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0043",
+    "oldSlug": "20250707",
+    "title": "音声入力とか",
+    "date": "2025-07-07T00:00:00.000Z",
+    "file": "0707.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0044",
+    "oldSlug": "20250711",
+    "title": "なぜ僕はTyporaで「文章を書く喜び」を再発見したのか",
+    "date": "2025-07-11T00:00:00.000Z",
+    "file": "0711.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0045",
+    "oldSlug": "20250712",
+    "title": "画像CDN化_lolipop",
+    "date": "2025-07-12T00:00:00.000Z",
+    "file": "0712.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0046",
+    "oldSlug": "20250713",
+    "title": "notion卒業",
+    "date": "2025-07-13T00:00:00.000Z",
+    "file": "0713.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0047",
+    "oldSlug": "20250714",
+    "title": "宇多田ヒカル、ハラリ対談",
+    "date": "2025-07-14T00:00:00.000Z",
+    "file": "0714.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0048",
+    "oldSlug": "20250715",
+    "title": "Mac→Windows移行前にGitリポジトリを大掃除した話【未プッシュ確認＆不要削除】",
+    "date": "2025-07-15T00:00:00.000Z",
+    "file": "0715.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0049",
+    "oldSlug": "20250720",
+    "title": "ブログ開発道",
+    "date": "2025-07-20T00:00:00.000Z",
+    "file": "0720.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0050",
+    "oldSlug": "20250721",
+    "title": "スキャンの代行",
+    "date": "2025-07-21T00:00:00.000Z",
+    "file": "0721.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0051",
+    "oldSlug": "20250721",
+    "title": "最適化ゾンビにならないための技術運用論",
+    "date": "2025-08-09T00:00:00.000Z",
+    "file": "0809.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0052",
+    "oldSlug": "20250810",
+    "title": "AGI（汎用人工知能）が到来する未来",
+    "date": "2025-08-10T00:00:00.000Z",
+    "file": "0810.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0053",
+    "oldSlug": "20251007",
+    "title": "秋の用意",
+    "date": "2025-10-07T00:00:00.000Z",
+    "file": "1007.md",
+    "draft": false
+  },
+  {
+    "newSlug": "0054",
+    "oldSlug": "20251013",
+    "title": "懐かしいサイト",
+    "date": "2025-10-13T00:00:00.000Z",
+    "file": "1013.md",
+    "draft": false
+  }
+]
