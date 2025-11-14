@@ -110,13 +110,56 @@ publicRoutes.get('/posts/:slug', async (c) => {
 publicRoutes.get('/sitemap.xml', async (c) => {
   try {
     const posts = await postService.getAllPosts(c.env.DB);
-    const baseUrl = 'https://masa86-blog.belong2jazz.workers.dev';
+    const hierarchicalArchives = await postService.getHierarchicalArchives(c.env.DB);
+
+    // カスタムドメインをハードコード（Google Search Console認識のため）
+    const baseUrl = 'https://blog.masa86.com';
+
+    // 最新の投稿日時を取得してホームページのlastmodに使用
+    const latestPostDate = posts.length > 0
+      ? posts.reduce((latest, post) => {
+          const postDate = new Date(post.updatedAt);
+          return postDate > latest ? postDate : latest;
+        }, new Date(posts[0].updatedAt)).toISOString()
+      : new Date().toISOString();
 
     const urls = [
-      { loc: baseUrl, lastmod: new Date().toISOString(), priority: '1.0' },
+      // ホームページ
+      {
+        loc: baseUrl,
+        lastmod: latestPostDate,
+        changefreq: 'daily',
+        priority: '1.0'
+      },
+      // アーカイブページ
+      {
+        loc: `${baseUrl}/archive`,
+        lastmod: latestPostDate,
+        changefreq: 'weekly',
+        priority: '0.7'
+      },
+      // 年月別アーカイブページ
+      ...hierarchicalArchives.flatMap(yearData =>
+        yearData.months.map(monthData => ({
+          loc: `${baseUrl}/archive/${yearData.year}/${monthData.month}`,
+          lastmod: monthData.posts.length > 0
+            ? new Date(
+                monthData.posts.reduce((latest, post) => {
+                  const postDate = new Date(post.createdAt);
+                  const latestDate = new Date(latest);
+                  return postDate > latestDate ? post.createdAt : latest;
+                }, monthData.posts[0].createdAt)
+              ).toISOString()
+            : new Date().toISOString(),
+          changefreq: 'monthly',
+          priority: '0.6'
+        }))
+      ),
+      // 個別投稿ページ
       ...posts.map(post => ({
         loc: `${baseUrl}/posts/${post.slug}`,
-        lastmod: post.updatedAt,
+        lastmod: new Date(post.updatedAt).toISOString(),
+        changefreq: 'monthly',
         priority: '0.8'
       }))
     ];
@@ -126,11 +169,15 @@ publicRoutes.get('/sitemap.xml', async (c) => {
 ${urls.map(url => `  <url>
     <loc>${url.loc}</loc>
     <lastmod>${url.lastmod}</lastmod>
+    <changefreq>${url.changefreq}</changefreq>
     <priority>${url.priority}</priority>
   </url>`).join('\n')}
 </urlset>`;
 
-    return c.text(sitemap, 200, { 'Content-Type': 'application/xml' });
+    return c.text(sitemap, 200, {
+      'Content-Type': 'application/xml; charset=UTF-8',
+      'Cache-Control': 'public, max-age=3600'
+    });
   } catch (error) {
     console.error('[ERROR] GET /sitemap.xml:', error);
     return c.text('Error generating sitemap', 500);
@@ -139,12 +186,104 @@ ${urls.map(url => `  <url>
 
 // robots.txt
 publicRoutes.get('/robots.txt', (c) => {
+  // カスタムドメインをハードコード（Google Search Console認識のため）
+  const baseUrl = 'https://blog.masa86.com';
+
   const robots = `User-agent: *
 Allow: /
 
-Sitemap: https://masa86-blog.belong2jazz.workers.dev/sitemap.xml`;
+Sitemap: ${baseUrl}/sitemap.xml`;
 
-  return c.text(robots, 200, { 'Content-Type': 'text/plain' });
+  return c.text(robots, 200, {
+    'Content-Type': 'text/plain; charset=UTF-8',
+    'Cache-Control': 'public, max-age=86400'
+  });
+});
+
+// HTML版サイトマップページ（人間が閲覧できる）
+publicRoutes.get('/sitemap', async (c) => {
+  try {
+    const posts = await postService.getAllPosts(c.env.DB);
+    const hierarchicalArchives = await postService.getHierarchicalArchives(c.env.DB);
+    const tags = await postService.getAllTags(c.env.DB);
+
+    const content = html`
+      <h2>サイトマップ</h2>
+      <p style="color: #666; margin-bottom: 30px;">中山雑記の全ページ一覧です。</p>
+
+      <section style="margin-bottom: 40px;">
+        <h3 style="font-size: 20px; margin-bottom: 15px; color: #2d4a3a;">主要ページ</h3>
+        <ul style="line-height: 1.8;">
+          <li><a href="/">ホーム</a> - トップページ</li>
+          <li><a href="/archive">アーカイブ</a> - 年月別記事一覧</li>
+          <li><a href="/sitemap">サイトマップ</a> - このページ</li>
+          <li><a href="/sitemap.xml">XMLサイトマップ</a> - 検索エンジン用</li>
+        </ul>
+      </section>
+
+      <section style="margin-bottom: 40px;">
+        <h3 style="font-size: 20px; margin-bottom: 15px; color: #2d4a3a;">アーカイブ（年月別）</h3>
+        <ul style="line-height: 1.8; list-style: none; padding: 0;">
+          ${hierarchicalArchives.map(yearData => html`
+            <li style="margin-bottom: 15px;">
+              <strong>${yearData.year}年</strong>
+              <ul style="margin-left: 20px; margin-top: 5px;">
+                ${yearData.months.map(monthData => html`
+                  <li>
+                    <a href="/archive/${yearData.year}/${monthData.month}">${monthData.label}</a>
+                    <span style="color: #999; font-size: 12px;">(${monthData.count}件)</span>
+                  </li>
+                `)}
+              </ul>
+            </li>
+          `)}
+        </ul>
+      </section>
+
+      <section style="margin-bottom: 40px;">
+        <h3 style="font-size: 20px; margin-bottom: 15px; color: #2d4a3a;">タグ一覧</h3>
+        <ul style="list-style: none; padding: 0;">
+          ${tags.map(tag => html`
+            <li style="display: inline-block; margin-right: 10px; margin-bottom: 5px;">
+              <a href="/?tag=${encodeURIComponent(tag)}" style="background: #f0f0f0; padding: 5px 10px; border-radius: 3px; display: inline-block;">${tag}</a>
+            </li>
+          `)}
+        </ul>
+      </section>
+
+      <section style="margin-bottom: 40px;">
+        <h3 style="font-size: 20px; margin-bottom: 15px; color: #2d4a3a;">全記事一覧 (${posts.length}件)</h3>
+        <ul style="line-height: 1.8;">
+          ${posts.map(post => html`
+            <li>
+              <a href="/posts/${post.slug}">${post.title}</a>
+              <span style="color: #999; font-size: 12px; margin-left: 10px;">
+                (${new Date(post.createdAt).toLocaleDateString('ja-JP')})
+              </span>
+            </li>
+          `)}
+        </ul>
+      </section>
+    `;
+
+    const seo: SEOMetadata = {
+      title: 'サイトマップ | 中山雑記',
+      description: '中山雑記の全ページ一覧です。記事、アーカイブ、タグなどサイト内のすべてのコンテンツにアクセスできます。',
+      keywords: ['サイトマップ', '記事一覧', 'ブログ', ...tags.slice(0, 5)],
+      ogUrl: `https://blog.masa86.com/sitemap`,
+      type: 'website'
+    };
+
+    const sidebar: SidebarData = {
+      tags,
+      hierarchicalArchives
+    };
+
+    return c.html(layout('サイトマップ', content, seo, sidebar));
+  } catch (error) {
+    console.error('[ERROR] GET /sitemap:', error);
+    return c.html(layout('エラー', '<h2>サイトマップの取得に失敗しました</h2>'), 500);
+  }
 });
 
 // アーカイブページ

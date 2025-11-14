@@ -41,6 +41,15 @@ export const layout = (title: string, content: string, seo?: SEOMetadata, sideba
   return html`<!DOCTYPE html>
 <html lang="ja">
 <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-21LTJSMZPJ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-21LTJSMZPJ');
+  </script>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${fullTitle}</title>
@@ -582,6 +591,7 @@ export const layout = (title: string, content: string, seo?: SEOMetadata, sideba
           <ul>
             <li><a href="/">すべての記事</a></li>
             <li><a href="/archive">アーカイブ</a></li>
+            <li><a href="/sitemap">サイトマップ</a></li>
           </ul>
         </div>
 
@@ -734,6 +744,15 @@ export const adminLayout = (title: string, content: string) => {
   return html`<!DOCTYPE html>
 <html lang="ja">
 <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-21LTJSMZPJ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-21LTJSMZPJ');
+  </script>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title} | 中山雑記 管理画面</title>
