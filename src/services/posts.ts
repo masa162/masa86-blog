@@ -1,6 +1,7 @@
 import { drizzle } from 'drizzle-orm/d1';
 import { eq, desc, like, and, sql } from 'drizzle-orm';
 import { posts, type Post, type NewPost } from '../db/schema';
+import { extractAudioUrls } from '../utils/shortcodes';
 
 export interface SearchOptions {
   keyword?: string;
@@ -376,4 +377,17 @@ export async function getHierarchicalArchives(db: D1Database): Promise<Hierarchi
     });
 
   return result;
+}
+
+/**
+ * audioショートコードを含む記事のみを取得（Podcast用）
+ */
+export async function getPodcastPosts(db: D1Database): Promise<Post[]> {
+  const allPosts = await getAllPosts(db);
+
+  // audioショートコードを含む記事のみをフィルタリング
+  return allPosts.filter(post => {
+    const audioUrls = extractAudioUrls(post.content);
+    return audioUrls.length > 0;
+  });
 }

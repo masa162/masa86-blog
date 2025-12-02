@@ -632,7 +632,7 @@ export const layout = (title: string, content: string, seo?: SEOMetadata, sideba
       <aside class="sidebar">
         <div class="sidebar-section">
           <div style="text-align: center; margin-bottom: 15px;">
-            <img src="/profile.jpg" alt="中山正之" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+            <img src="/profile.webp" alt="中山正之" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
           </div>
           <p style="font-weight: bold; text-align: center; margin-bottom: 5px;">中山正之</p>
           <p style="font-size: 12px; color: #666; margin-bottom: 3px;">1986年生まれ　神奈川県出身</p>

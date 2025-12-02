@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { html } from 'hono/html';
 import { marked } from 'marked';
-import { processShortcodes } from '../utils/shortcodes';
+import { processShortcodes, extractAudioUrls } from '../utils/shortcodes';
 import * as postService from '../services/posts';
 import { layout, type SEOMetadata, type SidebarData } from '../views/layout';
 import { homePage } from '../views/home';
@@ -193,6 +193,83 @@ ${urls.map(url => `  <url>
   } catch (error) {
     console.error('[ERROR] GET /sitemap.xml:', error);
     return c.text('Sitemap generation failed.', 500);
+  }
+});
+
+// Podcast RSS Feed
+publicRoutes.get('/feed/podcast.xml', async (c) => {
+  try {
+    const podcastPosts = await postService.getPodcastPosts(c.env.DB);
+
+    const baseUrl = 'https://blog.masa86.com';
+    const podcastTitle = '中山雑記 Podcast';
+    const podcastDescription = '中山正之の音声ブログ';
+    const podcastAuthor = '中山正之';
+    const podcastEmail = 'belong2jazz@gmail.com';
+    const podcastImage = `${baseUrl}/podcast-artwork.jpg`;
+
+    // XMLエスケープ関数
+    const escapeXml = (str: string): string => {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+    };
+
+    const items = podcastPosts.map(post => {
+      const audioUrls = extractAudioUrls(post.content);
+      const audioUrl = audioUrls[0]; // 最初の音声を使用
+
+      // Markdownから簡単な説明を生成
+      const description = post.content
+        .replace(/\{\{[^}]+\}\}/g, '') // ショートコード削除
+        .replace(/[#*`]/g, '') // Markdown記号削除
+        .substring(0, 200) + '...';
+
+      return `    <item>
+      <title>${escapeXml(post.title)}</title>
+      <link>${baseUrl}/posts/${post.slug}</link>
+      <guid isPermaLink="true">${baseUrl}/posts/${post.slug}</guid>
+      <pubDate>${new Date(post.createdAt).toUTCString()}</pubDate>
+      <description>${escapeXml(description)}</description>
+      <enclosure url="${escapeXml(audioUrl)}" type="audio/mpeg" length="0" />
+      <itunes:author>${escapeXml(podcastAuthor)}</itunes:author>
+      <itunes:summary>${escapeXml(description)}</itunes:summary>
+      <itunes:image href="${escapeXml(podcastImage)}" />
+    </item>`;
+    }).join('\n');
+
+    const rss = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" 
+     xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
+     xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>${escapeXml(podcastTitle)}</title>
+    <link>${baseUrl}</link>
+    <description>${escapeXml(podcastDescription)}</description>
+    <language>ja</language>
+    <copyright>© 2025 ${escapeXml(podcastAuthor)}</copyright>
+    <itunes:author>${escapeXml(podcastAuthor)}</itunes:author>
+    <itunes:summary>${escapeXml(podcastDescription)}</itunes:summary>
+    <itunes:owner>
+      <itunes:name>${escapeXml(podcastAuthor)}</itunes:name>
+      <itunes:email>${podcastEmail}</itunes:email>
+    </itunes:owner>
+    <itunes:image href="${escapeXml(podcastImage)}" />
+    <itunes:category text="Society &amp; Culture" />
+${items}
+  </channel>
+</rss>`;
+
+    return c.text(rss, 200, {
+      'Content-Type': 'application/xml; charset=UTF-8',
+      'Cache-Control': 'public, max-age=3600'
+    });
+  } catch (error) {
+    console.error('[ERROR] GET /feed/podcast.xml:', error);
+    return c.text('Podcast feed generation failed.', 500);
   }
 });
 
