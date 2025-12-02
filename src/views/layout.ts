@@ -465,6 +465,60 @@ export const layout = (title: string, content: string, seo?: SEOMetadata, sideba
       font-size: 12px;
       margin-right: 5px;
     }
+    /* Amazon商品カード */
+    .amazon-card {
+      display: block;
+      margin: 20px 0;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #ffffff;
+      transition: box-shadow 0.3s ease;
+    }
+    .amazon-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .amazon-card a {
+      display: flex;
+      text-decoration: none;
+      color: inherit;
+    }
+    .amazon-image {
+      width: 150px;
+      height: 150px;
+      object-fit: contain;
+      flex-shrink: 0;
+      padding: 10px;
+      background: #ffffff;
+    }
+    .amazon-info {
+      flex: 1;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .amazon-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333333;
+      margin: 0 0 10px 0;
+      line-height: 1.4;
+    }
+    .amazon-button {
+      display: inline-block;
+      background: #ff9900;
+      color: #ffffff;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      align-self: flex-start;
+    }
+    .amazon-card:hover .amazon-button {
+      background: #e88800;
+    }
     /* スマホ用 ↑ ボタン */
     #scroll-to-top {
       position: fixed;
@@ -555,6 +609,14 @@ export const layout = (title: string, content: string, seo?: SEOMetadata, sideba
       .sidebar.active {
         right: 0;
       }
+      .amazon-card a {
+        flex-direction: column;
+      }
+      .amazon-image {
+        width: 100%;
+        height: auto;
+        max-height: 200px;
+      }
     }
   </style>
 </head>
@@ -600,24 +662,24 @@ export const layout = (title: string, content: string, seo?: SEOMetadata, sideba
           <h3>アーカイブ</h3>
           <div class="archive-tree">
             ${sidebar.hierarchicalArchives.map((yearData, yearIndex) => {
-              let currentYearIndex = -1;
-              let currentMonthIndex = -1;
+    let currentYearIndex = -1;
+    let currentMonthIndex = -1;
 
-              if (sidebar.currentSlug) {
-                yearData.months.forEach((monthData, monthIdx) => {
-                  const foundPost = monthData.posts.find(p => p.slug === sidebar.currentSlug);
-                  if (foundPost) {
-                    currentYearIndex = yearIndex;
-                    currentMonthIndex = monthIdx;
-                  }
-                });
-              }
+    if (sidebar.currentSlug) {
+      yearData.months.forEach((monthData, monthIdx) => {
+        const foundPost = monthData.posts.find(p => p.slug === sidebar.currentSlug);
+        if (foundPost) {
+          currentYearIndex = yearIndex;
+          currentMonthIndex = monthIdx;
+        }
+      });
+    }
 
-              const isLatestYear = yearIndex === 0;
-              const isCurrentYear = currentYearIndex === yearIndex;
-              const shouldExpandYear = isLatestYear || isCurrentYear;
+    const isLatestYear = yearIndex === 0;
+    const isCurrentYear = currentYearIndex === yearIndex;
+    const shouldExpandYear = isLatestYear || isCurrentYear;
 
-              return html`
+    return html`
                 <div class="archive-year">
                   <div class="archive-year-header" onclick="toggleYear(${yearIndex})">
                     <span class="expand-icon" id="year-icon-${yearIndex}">${shouldExpandYear ? '▼' : '▶'}</span>
@@ -625,11 +687,11 @@ export const layout = (title: string, content: string, seo?: SEOMetadata, sideba
                   </div>
                   <div class="archive-months${shouldExpandYear ? '' : ' collapsed'}" id="year-${yearIndex}">
                     ${yearData.months.map((monthData, monthIndex) => {
-                      const isLatestMonth = yearIndex === 0 && monthIndex === 0;
-                      const isCurrentMonth = currentYearIndex === yearIndex && currentMonthIndex === monthIndex;
-                      const shouldExpandMonth = isLatestMonth || isCurrentMonth;
+      const isLatestMonth = yearIndex === 0 && monthIndex === 0;
+      const isCurrentMonth = currentYearIndex === yearIndex && currentMonthIndex === monthIndex;
+      const shouldExpandMonth = isLatestMonth || isCurrentMonth;
 
-                      return html`
+      return html`
                         <div class="archive-month">
                           <div class="archive-month-header" onclick="toggleMonth(${yearIndex}, ${monthIndex})">
                             <span class="expand-icon" id="month-icon-${yearIndex}-${monthIndex}">${shouldExpandMonth ? '▼' : '▶'}</span>
@@ -637,16 +699,16 @@ export const layout = (title: string, content: string, seo?: SEOMetadata, sideba
                           </div>
                           <div class="archive-posts${shouldExpandMonth ? '' : ' collapsed'}" id="month-${yearIndex}-${monthIndex}">
                             ${monthData.posts.map(post =>
-                              html`<a href="/posts/${post.slug}" class="archive-post${post.slug === sidebar.currentSlug ? ' current-post' : ''}">・${post.title}</a>`
-                            )}
+        html`<a href="/posts/${post.slug}" class="archive-post${post.slug === sidebar.currentSlug ? ' current-post' : ''}">・${post.title}</a>`
+      )}
                           </div>
                         </div>
                       `;
-                    })}
+    })}
                   </div>
                 </div>
               `;
-            })}
+  })}
           </div>
         </div>
         ` : ''}
@@ -656,8 +718,8 @@ export const layout = (title: string, content: string, seo?: SEOMetadata, sideba
           <h3>タグ</h3>
           <div class="tag-cloud">
             ${sidebar.tags.map(tag =>
-              html`<a href="/?tag=${encodeURIComponent(tag)}">${tag}</a>`
-            )}
+    html`<a href="/?tag=${encodeURIComponent(tag)}">${tag}</a>`
+  )}
           </div>
         </div>
         ` : ''}

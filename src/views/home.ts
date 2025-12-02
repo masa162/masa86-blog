@@ -1,5 +1,6 @@
 import { html } from 'hono/html';
 import { marked } from 'marked';
+import { processShortcodes } from '../utils/shortcodes';
 import type { Post } from '../db/schema';
 
 interface PaginationOptions {
@@ -32,8 +33,8 @@ export const homePage = (posts: Post[], options?: PaginationOptions) => {
             <select name="tag" style="width: 100%;">
               <option value="">すべて</option>
               ${options.tags.map(t =>
-                `<option value="${t}" ${options.tag === t ? 'selected' : ''}>${t}</option>`
-              ).join('')}
+    `<option value="${t}" ${options.tag === t ? 'selected' : ''}>${t}</option>`
+  ).join('')}
             </select>
           </div>
           <div>
@@ -62,8 +63,9 @@ export const homePage = (posts: Post[], options?: PaginationOptions) => {
       `<span class="tag">${tag}</span>`
     ).join('');
 
-    // MarkdownをHTMLに変換
-    const htmlContent = marked.parse(post.content) as string;
+    // ショートコード処理してからMarkdownをHTMLに変換
+    const processedContent = processShortcodes(post.content);
+    const htmlContent = marked.parse(processedContent) as string;
 
     // サムネイル画像を抽出（最初の画像またはYouTube）
     let thumbnailHtml = '';
@@ -104,16 +106,16 @@ export const homePage = (posts: Post[], options?: PaginationOptions) => {
   const paginationHtml = options && options.totalPages > 1 ? html`
     <div style="display: flex; justify-content: center; gap: 15px; margin-top: 30px; padding: 15px 0; align-items: center;">
       ${options.page > 1
-        ? html`<a href="/?page=${options.page - 1}${buildQueryString(options)}" style="padding: 8px 16px; font-size: 14px; background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px;">← 前へ</a>`
-        : html`<span style="padding: 8px 16px; font-size: 14px; color: #cccccc; border: 1px solid #f0f0f0; border-radius: 4px; background: #fafafa;">← 前へ</span>`
-      }
+      ? html`<a href="/?page=${options.page - 1}${buildQueryString(options)}" style="padding: 8px 16px; font-size: 14px; background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px;">← 前へ</a>`
+      : html`<span style="padding: 8px 16px; font-size: 14px; color: #cccccc; border: 1px solid #f0f0f0; border-radius: 4px; background: #fafafa;">← 前へ</span>`
+    }
       <span style="padding: 8px 16px; font-size: 14px; color: #666666; font-weight: 600;">
         ${options.page} / ${options.totalPages}
       </span>
       ${options.page < options.totalPages
-        ? html`<a href="/?page=${options.page + 1}${buildQueryString(options)}" style="padding: 8px 16px; font-size: 14px; background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px;">次へ →</a>`
-        : html`<span style="padding: 8px 16px; font-size: 14px; color: #cccccc; border: 1px solid #f0f0f0; border-radius: 4px; background: #fafafa;">次へ →</span>`
-      }
+      ? html`<a href="/?page=${options.page + 1}${buildQueryString(options)}" style="padding: 8px 16px; font-size: 14px; background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px;">次へ →</a>`
+      : html`<span style="padding: 8px 16px; font-size: 14px; color: #cccccc; border: 1px solid #f0f0f0; border-radius: 4px; background: #fafafa;">次へ →</span>`
+    }
     </div>
   ` : '';
 

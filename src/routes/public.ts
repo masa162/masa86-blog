@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { html } from 'hono/html';
 import { marked } from 'marked';
+import { processShortcodes } from '../utils/shortcodes';
 import * as postService from '../services/posts';
 import { layout, type SEOMetadata, type SidebarData } from '../views/layout';
 import { homePage } from '../views/home';
@@ -133,9 +134,9 @@ publicRoutes.get('/sitemap.xml', async (c) => {
 
     const latestPostDate = posts.length > 0
       ? posts.reduce((latest, post) => {
-          const postDate = new Date(post.updatedAt);
-          return postDate > latest ? postDate : latest;
-        }, new Date(posts[0].updatedAt)).toISOString()
+        const postDate = new Date(post.updatedAt);
+        return postDate > latest ? postDate : latest;
+      }, new Date(posts[0].updatedAt)).toISOString()
       : new Date().toISOString();
 
     const urls = [
@@ -156,12 +157,12 @@ publicRoutes.get('/sitemap.xml', async (c) => {
           loc: `${baseUrl}/archive/${yearData.year}/${monthData.month}`,
           lastmod: monthData.posts.length > 0
             ? new Date(
-                monthData.posts.reduce((latest, post) => {
-                  const postDate = new Date(post.createdAt);
-                  const latestDate = new Date(latest);
-                  return postDate > latestDate ? post.createdAt : latest;
-                }, monthData.posts[0].createdAt)
-              ).toISOString()
+              monthData.posts.reduce((latest, post) => {
+                const postDate = new Date(post.createdAt);
+                const latestDate = new Date(latest);
+                return postDate > latestDate ? post.createdAt : latest;
+              }, monthData.posts[0].createdAt)
+            ).toISOString()
             : new Date().toISOString(),
           changefreq: 'monthly',
           priority: '0.6'
@@ -315,8 +316,8 @@ publicRoutes.get('/archive', async (c) => {
               </div>
               <div class="archive-posts" id="month-${yearIndex}-${monthIndex}">
                 ${monthData.posts.map(post =>
-                  `<a href="/posts/${post.slug}" class="archive-post">・${post.title}</a>`
-                ).join('')}
+      `<a href="/posts/${post.slug}" class="archive-post">・${post.title}</a>`
+    ).join('')}
               </div>
             </div>
           `).join('')}
@@ -363,8 +364,9 @@ publicRoutes.get('/archive/:year/:month', async (c) => {
         `<span class="tag">${tag}</span>`
       ).join('');
 
-      // MarkdownをHTMLに変換してプレーンテキストを抽出
-      const htmlContent = marked.parse(post.content) as string;
+      // ショートコード処理してからMarkdownをHTMLに変換
+      const processedContent = processShortcodes(post.content);
+      const htmlContent = marked.parse(processedContent) as string;
       const plainText = htmlContent.replace(/<[^>]*>/g, '').replace(/\n/g, ' ');
       const preview = plainText.substring(0, 150) + (plainText.length > 150 ? '...' : '');
 

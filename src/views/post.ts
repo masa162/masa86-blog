@@ -1,5 +1,6 @@
 import { html } from 'hono/html';
 import { marked } from 'marked';
+import { processShortcodes } from '../utils/shortcodes';
 import type { Post } from '../db/schema';
 
 interface AdjacentPosts {
@@ -13,12 +14,8 @@ export const postPage = (post: Post, adjacent?: AdjacentPosts) => {
     `<span class="tag">${tag}</span>`
   ).join('');
 
-  // YouTube shortcode を iframe に変換（Markdown変換前に処理）
-  // {{< youtube VIDEO_ID >}} → <iframe ... >
-  let content = post.content.replace(
-    /\{\{<\s*youtube\s+([a-zA-Z0-9_-]+)\s*>\}\}/g,
-    '<div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; margin: 20px 0;"><iframe src="https://www.youtube.com/embed/$1" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" frameborder="0" allowfullscreen></iframe></div>'
-  );
+  // ショートコード処理（YouTube、Amazonなど）
+  let content = processShortcodes(post.content);
 
   // MarkdownをHTMLに変換
   let htmlContent = marked.parse(content) as string;
