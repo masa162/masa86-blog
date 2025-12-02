@@ -34,7 +34,7 @@ export const layout = (title: string, content: string, seo?: SEOMetadata, sideba
   const fullTitle = seo?.title || `${title} | 中山雑記`;
   const description = seo?.description || '中山正之の雑記ブログ';
   const keywords = seo?.keywords?.join(', ') || 'ブログ, 技術, プログラミング, 雑記';
-  const ogUrl = seo?.ogUrl || 'https://masa86-blog.belong2jazz.workers.dev';
+  const ogUrl = seo?.ogUrl || 'https://blog.masa86.com';
   const ogImage = seo?.ogImage || '';  // OGP画像はテキストのみ
   const ogType = seo?.type || 'website';
 

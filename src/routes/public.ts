@@ -46,7 +46,7 @@ publicRoutes.get('/', async (c) => {
       title: 'masa86 Blog - ホーム',
       description: 'シンプルで高速なブログシステム。技術、プログラミング、その他様々なトピックを扱います。',
       keywords: ['ブログ', '技術', 'プログラミング', ...tags.slice(0, 5)],
-      ogUrl: 'https://masa86-blog.belong2jazz.workers.dev',
+      ogUrl: 'https://blog.masa86.com',
       type: 'website'
     };
 
@@ -84,7 +84,7 @@ publicRoutes.get('/posts/:slug', async (c) => {
       title: `${post.title} | masa86 Blog`,
       description,
       keywords: tags,
-      ogUrl: `https://masa86-blog.belong2jazz.workers.dev/posts/${slug}`,
+      ogUrl: `https://blog.masa86.com/posts/${slug}`,
       type: 'article',
       publishedTime: post.createdAt,
       modifiedTime: post.updatedAt
@@ -106,16 +106,31 @@ publicRoutes.get('/posts/:slug', async (c) => {
   }
 });
 
-// サイトマップ
+// サイトマップ（カスタムドメインの場合は.workers.devにリダイレクト）
 publicRoutes.get('/sitemap.xml', async (c) => {
+  const host = c.req.header('host') || '';
+
+  // カスタムドメイン（blog.masa86.com）からのアクセスの場合は.workers.devにリダイレクト
+  if (host.includes('blog.masa86.com')) {
+    const workersDevUrl = 'https://masa86-blog.belong2jazz.workers.dev/sitemap.xml';
+
+    // 高山ブログと同じ形式でリダイレクトを返す（ボディ付き）
+    c.header('Location', workersDevUrl);
+    c.header('Content-Type', 'text/plain;charset=UTF-8');
+    c.header('referrer-policy', 'strict-origin-when-cross-origin');
+    c.header('x-content-type-options', 'nosniff');
+    c.status(302);
+
+    return c.text(`Redirecting to ${workersDevUrl}`);
+  }
+
+  // .workers.devドメインからのアクセスの場合は動的生成
   try {
     const posts = await postService.getAllPosts(c.env.DB);
     const hierarchicalArchives = await postService.getHierarchicalArchives(c.env.DB);
 
-    // カスタムドメインをハードコード（Google Search Console認識のため）
     const baseUrl = 'https://blog.masa86.com';
 
-    // 最新の投稿日時を取得してホームページのlastmodに使用
     const latestPostDate = posts.length > 0
       ? posts.reduce((latest, post) => {
           const postDate = new Date(post.updatedAt);
@@ -124,21 +139,18 @@ publicRoutes.get('/sitemap.xml', async (c) => {
       : new Date().toISOString();
 
     const urls = [
-      // ホームページ
       {
         loc: baseUrl,
         lastmod: latestPostDate,
         changefreq: 'daily',
         priority: '1.0'
       },
-      // アーカイブページ
       {
         loc: `${baseUrl}/archive`,
         lastmod: latestPostDate,
         changefreq: 'weekly',
         priority: '0.7'
       },
-      // 年月別アーカイブページ
       ...hierarchicalArchives.flatMap(yearData =>
         yearData.months.map(monthData => ({
           loc: `${baseUrl}/archive/${yearData.year}/${monthData.month}`,
@@ -155,7 +167,6 @@ publicRoutes.get('/sitemap.xml', async (c) => {
           priority: '0.6'
         }))
       ),
-      // 個別投稿ページ
       ...posts.map(post => ({
         loc: `${baseUrl}/posts/${post.slug}`,
         lastmod: new Date(post.updatedAt).toISOString(),
@@ -168,7 +179,7 @@ publicRoutes.get('/sitemap.xml', async (c) => {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map(url => `  <url>
     <loc>${url.loc}</loc>
-    <lastmod>${url.lastmod}</lastmod>
+    <lastmod>${url.lastmod.split('T')[0]}</lastmod>
     <changefreq>${url.changefreq}</changefreq>
     <priority>${url.priority}</priority>
   </url>`).join('\n')}
@@ -180,19 +191,17 @@ ${urls.map(url => `  <url>
     });
   } catch (error) {
     console.error('[ERROR] GET /sitemap.xml:', error);
-    return c.text('Error generating sitemap', 500);
+    return c.text('Sitemap generation failed.', 500);
   }
 });
 
 // robots.txt
 publicRoutes.get('/robots.txt', (c) => {
-  // カスタムドメインをハードコード（Google Search Console認識のため）
-  const baseUrl = 'https://blog.masa86.com';
-
   const robots = `User-agent: *
 Allow: /
 
-Sitemap: ${baseUrl}/sitemap.xml`;
+# Sitemap location
+Sitemap: https://blog.masa86.com/sitemap.xml`;
 
   return c.text(robots, 200, {
     'Content-Type': 'text/plain; charset=UTF-8',
