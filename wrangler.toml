@@ -3,6 +3,9 @@ main = "src/index.ts"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
 
+# カスタムドメイン: blog.masa86.com
+# Cloudflare Dashboard > Workers > masa86-blog > Custom Domains で設定済み
+
 [assets]
 directory = "./web/public"
 

@@ -3,6 +3,19 @@ import { eq, desc, like, and, sql } from 'drizzle-orm';
 import { posts, type Post, type NewPost } from '../db/schema';
 import { extractAudioUrls } from '../utils/shortcodes';
 
+function createDb(d1: D1Database) {
+  return drizzle(d1);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function parseTags(tagsJson: string): any {
+  try {
+    return JSON.parse(tagsJson);
+  } catch {
+    return [];
+  }
+}
+
 export interface SearchOptions {
   keyword?: string;
   tag?: string;
@@ -16,7 +29,7 @@ export interface SearchOptions {
 }
 
 export async function getAllPosts(db: D1Database): Promise<Post[]> {
-  const drizzleDb = drizzle(db);
+  const drizzleDb = createDb(db);
   const result = await drizzleDb
     .select()
     .from(posts)
@@ -24,12 +37,12 @@ export async function getAllPosts(db: D1Database): Promise<Post[]> {
 
   return result.map(post => ({
     ...post,
-    tags: JSON.parse(post.tags)
+    tags: parseTags(post.tags)
   }));
 }
 
 export async function searchPosts(db: D1Database, options: SearchOptions): Promise<{ posts: Post[]; total: number }> {
-  const drizzleDb = drizzle(db);
+  const drizzleDb = createDb(db);
   const conditions: any[] = [];
 
   // Slug直接検索（完全一致）
@@ -99,14 +112,14 @@ export async function searchPosts(db: D1Database, options: SearchOptions): Promi
   return {
     posts: result.map(post => ({
       ...post,
-      tags: JSON.parse(post.tags)
+      tags: parseTags(post.tags)
     })),
     total
   };
 }
 
 export async function getPostBySlug(db: D1Database, slug: string): Promise<Post | undefined> {
-  const drizzleDb = drizzle(db);
+  const drizzleDb = createDb(db);
   const result = await drizzleDb
     .select()
     .from(posts)
@@ -117,12 +130,12 @@ export async function getPostBySlug(db: D1Database, slug: string): Promise<Post 
 
   return {
     ...result[0],
-    tags: JSON.parse(result[0].tags)
+    tags: parseTags(result[0].tags)
   };
 }
 
 export async function createPost(db: D1Database, data: NewPost): Promise<Post> {
-  const drizzleDb = drizzle(db);
+  const drizzleDb = createDb(db);
 
   // タグをJSON文字列に変換
   const tagsJson = Array.isArray(data.tags)
@@ -136,7 +149,7 @@ export async function createPost(db: D1Database, data: NewPost): Promise<Post> {
 
   return {
     ...result[0],
-    tags: JSON.parse(result[0].tags)
+    tags: parseTags(result[0].tags)
   };
 }
 
@@ -145,7 +158,7 @@ export async function updatePost(
   slug: string,
   data: Partial<NewPost>
 ): Promise<Post | undefined> {
-  const drizzleDb = drizzle(db);
+  const drizzleDb = createDb(db);
 
   // タグをJSON文字列に変換
   const updateData: any = { ...data };
@@ -163,12 +176,12 @@ export async function updatePost(
 
   return {
     ...result[0],
-    tags: JSON.parse(result[0].tags)
+    tags: parseTags(result[0].tags)
   };
 }
 
 export async function deletePost(db: D1Database, slug: string): Promise<boolean> {
-  const drizzleDb = drizzle(db);
+  const drizzleDb = createDb(db);
 
   const result = await drizzleDb
     .delete(posts)
@@ -179,12 +192,12 @@ export async function deletePost(db: D1Database, slug: string): Promise<boolean>
 }
 
 export async function getAllTags(db: D1Database): Promise<string[]> {
-  const drizzleDb = drizzle(db);
+  const drizzleDb = createDb(db);
   const allPosts = await drizzleDb.select({ tags: posts.tags }).from(posts);
 
   const tagsSet = new Set<string>();
   allPosts.forEach(post => {
-    const tags = JSON.parse(post.tags);
+    const tags = parseTags(post.tags);
     tags.forEach((tag: string) => tagsSet.add(tag));
   });
 
@@ -199,7 +212,7 @@ export interface ArchiveEntry {
 }
 
 export async function getArchives(db: D1Database): Promise<ArchiveEntry[]> {
-  const drizzleDb = drizzle(db);
+  const drizzleDb = createDb(db);
   const allPosts = await drizzleDb
     .select({ createdAt: posts.createdAt })
     .from(posts)
@@ -233,7 +246,7 @@ export async function getArchives(db: D1Database): Promise<ArchiveEntry[]> {
 }
 
 export async function getPostsByYearMonth(db: D1Database, year: number, month: number): Promise<Post[]> {
-  const drizzleDb = drizzle(db);
+  const drizzleDb = createDb(db);
 
   // 月の開始日と終了日を計算
   const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
@@ -254,12 +267,12 @@ export async function getPostsByYearMonth(db: D1Database, year: number, month: n
 
   return result.map(post => ({
     ...post,
-    tags: JSON.parse(post.tags)
+    tags: parseTags(post.tags)
   }));
 }
 
 export async function getNextSlugNumber(db: D1Database): Promise<string> {
-  const drizzleDb = drizzle(db);
+  const drizzleDb = createDb(db);
   const allPosts = await drizzleDb
     .select({ slug: posts.slug })
     .from(posts);
@@ -296,7 +309,7 @@ export interface HierarchicalArchive {
 }
 
 export async function getAdjacentPosts(db: D1Database, currentSlug: string): Promise<{ prev: Post | null; next: Post | null }> {
-  const drizzleDb = drizzle(db);
+  const drizzleDb = createDb(db);
 
   // すべての記事を作成日時順（降順）で取得
   const allPosts = await drizzleDb
@@ -318,13 +331,13 @@ export async function getAdjacentPosts(db: D1Database, currentSlug: string): Pro
   const nextPost = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
 
   return {
-    prev: prevPost ? { ...prevPost, tags: JSON.parse(prevPost.tags) } : null,
-    next: nextPost ? { ...nextPost, tags: JSON.parse(nextPost.tags) } : null
+    prev: prevPost ? { ...prevPost, tags: parseTags(prevPost.tags) } : null,
+    next: nextPost ? { ...nextPost, tags: parseTags(nextPost.tags) } : null
   };
 }
 
 export async function getHierarchicalArchives(db: D1Database): Promise<HierarchicalArchive[]> {
-  const drizzleDb = drizzle(db);
+  const drizzleDb = createDb(db);
   const allPosts = await drizzleDb
     .select({
       slug: posts.slug,

@@ -3,6 +3,15 @@
  * Markdown変換前にショートコードをHTMLに変換します
  */
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 export function processShortcodes(content: string): string {
   // YouTube shortcode: {{\< youtube VIDEO_ID \>}}
   content = content.replace(
@@ -14,25 +23,11 @@ export function processShortcodes(content: string): string {
   content = content.replace(
     /\{\{\s*amazon\s+link="([^"]+)"\s+image="([^"]+)"\s+title="([^"]+)"\s*\}\}/g,
     (match, link, image, title) => {
-      // HTMLエスケープ処理
-      const escapeHtml = (str: string) => {
-        return str
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#039;');
-      };
-
-      const escapedLink = escapeHtml(link);
-      const escapedImage = escapeHtml(image);
-      const escapedTitle = escapeHtml(title);
-
       return `<div class="amazon-card">
-  <a href="${escapedLink}" target="_blank" rel="noopener noreferrer nofollow">
-    <img src="${escapedImage}" alt="${escapedTitle}" class="amazon-image">
+  <a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer nofollow">
+    <img src="${escapeHtml(image)}" alt="${escapeHtml(title)}" class="amazon-image">
     <div class="amazon-info">
-      <p class="amazon-title">${escapedTitle}</p>
+      <p class="amazon-title">${escapeHtml(title)}</p>
       <span class="amazon-button">Amazonで見る</span>
     </div>
   </a>
@@ -44,20 +39,8 @@ export function processShortcodes(content: string): string {
   content = content.replace(
     /\{\{\s*audio\s+src="([^"]+)"\s*\}\}/g,
     (match, src) => {
-      // HTMLエスケープ処理
-      const escapeHtml = (str: string) => {
-        return str
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#039;');
-      };
-
-      const escapedSrc = escapeHtml(src);
-
       return `<audio controls style="width: 100%; margin: 20px 0;">
-  <source src="${escapedSrc}" type="audio/mpeg">
+  <source src="${escapeHtml(src)}" type="audio/mpeg">
   お使いのブラウザはaudio要素をサポートしていません。
 </audio>`;
     }
