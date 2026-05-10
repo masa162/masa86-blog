@@ -1,15 +1,20 @@
-# masa86 Blog
+# masa86 Blog — 中山雑記
 
-シンプルで高速、堅牢なブログシステム
+**Live URL**: https://blog.masa86.com
+**workers.dev**: https://masa86-blog.belong2jazz.workers.dev
 
-**Live URL**: https://masa86-blog.belong2jazz.workers.dev
+## 運用メモ
+
+- **CI/CDなし** — デプロイは手動 `npx wrangler deploy`（GitHub自動連携未設定）
+- **Worker一本構成** — Cloudflare Pagesは使っていない。フロント・バックエンドともにWorkerで完結
+- **記事管理** — 管理画面（/admin）からD1に入稿。mn4/wip_*.mdで草稿→CMSにpost
+- **シーズンメンテ運用** — 随時アプデ。ガリガリ開発フェーズは終了
 
 ## 技術スタック
 
-- **Hono** v4 - 超高速Webフレームワーク (402k ops/sec)
-- **Drizzle ORM** - 型安全なORM with D1サポート
-- **Cloudflare Workers** - エッジコンピューティング
-- **Cloudflare D1** - サーバーレスSQLite
+- **Hono** v4 - Webフレームワーク
+- **Cloudflare Workers** - フロント・バックエンドともにWorkerで完結
+- **Cloudflare D1** - サーバーレスSQLite（記事データ）
 - **TypeScript** - 型安全な開発
 
 ## なぜこの構成？

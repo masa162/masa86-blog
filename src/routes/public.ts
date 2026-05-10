@@ -107,25 +107,8 @@ publicRoutes.get('/posts/:slug', async (c) => {
   }
 });
 
-// サイトマップ（カスタムドメインの場合は.workers.devにリダイレクト）
+// サイトマップ
 publicRoutes.get('/sitemap.xml', async (c) => {
-  const host = c.req.header('host') || '';
-
-  // カスタムドメイン（blog.masa86.com）からのアクセスの場合は.workers.devにリダイレクト
-  if (host.includes('blog.masa86.com')) {
-    const workersDevUrl = 'https://masa86-blog.belong2jazz.workers.dev/sitemap.xml';
-
-    // 高山ブログと同じ形式でリダイレクトを返す（ボディ付き）
-    c.header('Location', workersDevUrl);
-    c.header('Content-Type', 'text/plain;charset=UTF-8');
-    c.header('referrer-policy', 'strict-origin-when-cross-origin');
-    c.header('x-content-type-options', 'nosniff');
-    c.status(302);
-
-    return c.text(`Redirecting to ${workersDevUrl}`);
-  }
-
-  // .workers.devドメインからのアクセスの場合は動的生成
   try {
     const posts = await postService.getAllPosts(c.env.DB);
     const hierarchicalArchives = await postService.getHierarchicalArchives(c.env.DB);

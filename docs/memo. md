@@ -1,6 +1,0 @@
-ショートコード Amazon アフィリエイトの書き方 メモ。
-{{ amazon link="URL" image="画像URL" title="夏目漱石『道草』" }}
-
-
-audioショートコード追加: {{ audio src="URL" }}形式で音声を埋め込み可能
-
