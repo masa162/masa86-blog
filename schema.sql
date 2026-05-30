@@ -19,6 +19,12 @@ BEGIN
   UPDATE posts SET updated_at = datetime('now') WHERE id = NEW.id;
 END;
 
+-- Tag slugs table (Japanese tag name → URL slug mapping)
+CREATE TABLE IF NOT EXISTS tag_slugs (
+  tag TEXT PRIMARY KEY,
+  slug TEXT NOT NULL UNIQUE
+);
+
 -- Sample data
 INSERT OR IGNORE INTO posts (slug, title, content, tags, created_at, updated_at) VALUES
 ('0001', 'ブログ開設のお知らせ', '# ブログ開設のお知らせ

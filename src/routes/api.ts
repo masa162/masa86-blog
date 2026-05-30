@@ -147,4 +147,37 @@ api.delete('/posts/:slug', basicAuth, async (c) => {
   }
 });
 
+// タグスラッグ一覧取得
+api.get('/tag-slugs', basicAuth, async (c) => {
+  try {
+    const data = await postService.getAllTagSlugs(c.env.DB);
+    return c.json({ tagSlugs: data });
+  } catch (error) {
+    console.error('[ERROR] GET /api/tag-slugs:', error);
+    return c.json({ error: 'Failed to fetch tag slugs' }, 500);
+  }
+});
+
+// タグスラッグ登録・更新（認証必須）
+api.put('/tag-slugs', basicAuth, async (c) => {
+  try {
+    const body = await c.req.json<{ tag: string; slug: string }>();
+    if (!body.tag || !body.slug) {
+      return c.json({ error: 'Missing required fields: tag, slug' }, 400);
+    }
+    // スラッグは英数字・ハイフンのみ許可
+    if (!/^[a-z0-9-]+$/.test(body.slug)) {
+      return c.json({ error: 'Slug must contain only lowercase letters, numbers, and hyphens' }, 400);
+    }
+    await postService.upsertTagSlug(c.env.DB, body.tag, body.slug);
+    return c.json({ tag: body.tag, slug: body.slug });
+  } catch (error: any) {
+    console.error('[ERROR] PUT /api/tag-slugs:', error);
+    if (error.message?.includes('UNIQUE constraint failed')) {
+      return c.json({ error: 'This slug is already used by another tag' }, 409);
+    }
+    return c.json({ error: 'Failed to save tag slug' }, 500);
+  }
+});
+
 export default api;

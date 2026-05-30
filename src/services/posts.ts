@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/d1';
 import { eq, desc, like, and, sql } from 'drizzle-orm';
-import { posts, type Post, type NewPost } from '../db/schema';
+import { posts, tagSlugs, type Post, type NewPost, type TagSlug } from '../db/schema';
 import { extractAudioUrls } from '../utils/shortcodes';
 
 function createDb(d1: D1Database) {
@@ -390,6 +390,57 @@ export async function getHierarchicalArchives(db: D1Database): Promise<Hierarchi
     });
 
   return result;
+}
+
+export async function getAdjacentPostsByTag(
+  db: D1Database,
+  currentSlug: string,
+  tag: string
+): Promise<{ prev: Post | null; next: Post | null }> {
+  const drizzleDb = createDb(db);
+
+  // タグを含む全記事を作成日時降順で取得
+  const taggedPosts = await drizzleDb
+    .select()
+    .from(posts)
+    .where(sql`${posts.tags} LIKE ${'%"' + tag + '"%'}`)
+    .orderBy(desc(posts.createdAt));
+
+  const currentIndex = taggedPosts.findIndex(p => p.slug === currentSlug);
+  if (currentIndex === -1) return { prev: null, next: null };
+
+  const prevPost = currentIndex > 0 ? taggedPosts[currentIndex - 1] : null;
+  const nextPost = currentIndex < taggedPosts.length - 1 ? taggedPosts[currentIndex + 1] : null;
+
+  return {
+    prev: prevPost ? { ...prevPost, tags: parseTags(prevPost.tags) } : null,
+    next: nextPost ? { ...nextPost, tags: parseTags(nextPost.tags) } : null
+  };
+}
+
+export async function getAllTagSlugs(db: D1Database): Promise<TagSlug[]> {
+  const drizzleDb = createDb(db);
+  return drizzleDb.select().from(tagSlugs);
+}
+
+export async function getTagSlug(db: D1Database, tag: string): Promise<string | null> {
+  const drizzleDb = createDb(db);
+  const result = await drizzleDb.select().from(tagSlugs).where(eq(tagSlugs.tag, tag)).limit(1);
+  return result[0]?.slug ?? null;
+}
+
+export async function getTagBySlug(db: D1Database, slug: string): Promise<string | null> {
+  const drizzleDb = createDb(db);
+  const result = await drizzleDb.select().from(tagSlugs).where(eq(tagSlugs.slug, slug)).limit(1);
+  return result[0]?.tag ?? null;
+}
+
+export async function upsertTagSlug(db: D1Database, tag: string, slug: string): Promise<void> {
+  const drizzleDb = createDb(db);
+  await drizzleDb
+    .insert(tagSlugs)
+    .values({ tag, slug })
+    .onConflictDoUpdate({ target: tagSlugs.tag, set: { slug } });
 }
 
 /**

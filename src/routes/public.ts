@@ -76,9 +76,15 @@ publicRoutes.get('/posts/:slug', async (c) => {
     // 前後の記事を取得
     const adjacent = await postService.getAdjacentPosts(c.env.DB, slug);
 
-    const content = postPage(post, adjacent);
-
+    // 同タグ内での前後記事（先頭タグ基準）
     const tags = Array.isArray(post.tags) ? post.tags : JSON.parse(post.tags as string);
+    const primaryTag = tags[0] || null;
+    const adjacentByTag = primaryTag
+      ? await postService.getAdjacentPostsByTag(c.env.DB, slug, primaryTag)
+      : { prev: null, next: null };
+
+    const content = postPage(post, adjacent, primaryTag, adjacentByTag);
+
     const description = post.content.substring(0, 160).replace(/\n/g, ' ') + '...';
 
     const seo: SEOMetadata = {
@@ -104,6 +110,23 @@ publicRoutes.get('/posts/:slug', async (c) => {
   } catch (error) {
     console.error('[ERROR] GET /posts/:slug:', error);
     return c.html(layout('エラー', '<h2>記事の取得に失敗しました</h2>'), 500);
+  }
+});
+
+// タグスラッグ → タグページへリダイレクト
+publicRoutes.get('/tag/:slug', async (c) => {
+  try {
+    const slug = c.req.param('slug');
+    const tag = await postService.getTagBySlug(c.env.DB, slug);
+
+    if (!tag) {
+      return c.html(layout('Not Found', '<h2>タグが見つかりません</h2><a href="/" class="back-link">← ホームに戻る</a>'), 404);
+    }
+
+    return c.redirect(`/?tag=${encodeURIComponent(tag)}`, 301);
+  } catch (error) {
+    console.error('[ERROR] GET /tag/:slug:', error);
+    return c.html(layout('エラー', '<h2>エラーが発生しました</h2>'), 500);
   }
 });
 

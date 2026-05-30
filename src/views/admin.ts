@@ -217,6 +217,7 @@ export const adminPage = (posts: Post[], pagination?: PaginationInfo) => {
     <div style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center;">
       <button onclick="showNewPostForm()" class="primary">新規記事作成</button>
       <a href="/admin/notes" style="color: #0066cc; text-decoration: none; font-size: 14px;">特記事項</a>
+      <a href="/admin/tag-slugs" style="color: #0066cc; text-decoration: none; font-size: 14px;">タグURL設定</a>
     </div>
 
     <table>

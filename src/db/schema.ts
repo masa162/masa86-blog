@@ -13,3 +13,10 @@ export const posts = sqliteTable('posts', {
 
 export type Post = typeof posts.$inferSelect;
 export type NewPost = typeof posts.$inferInsert;
+
+export const tagSlugs = sqliteTable('tag_slugs', {
+  tag: text('tag').primaryKey(),
+  slug: text('slug').notNull().unique()
+});
+
+export type TagSlug = typeof tagSlugs.$inferSelect;

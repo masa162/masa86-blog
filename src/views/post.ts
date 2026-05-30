@@ -8,7 +8,12 @@ interface AdjacentPosts {
   next: Post | null;
 }
 
-export const postPage = (post: Post, adjacent?: AdjacentPosts) => {
+export const postPage = (
+  post: Post,
+  adjacent?: AdjacentPosts,
+  primaryTag?: string | null,
+  adjacentByTag?: AdjacentPosts
+) => {
   const tags = Array.isArray(post.tags) ? post.tags : JSON.parse(post.tags as string);
   const tagsHtml = tags.map((tag: string) =>
     `<a href="/?tag=${encodeURIComponent(tag)}" class="tag" style="text-decoration: none;">${tag}</a>`
@@ -32,6 +37,29 @@ export const postPage = (post: Post, adjacent?: AdjacentPosts) => {
     return title.length > maxLength ? title.substring(0, maxLength) + '...' : title;
   };
 
+  // 同タグ前後セクション
+  const relatedByTagHtml = (adjacentByTag && primaryTag && (adjacentByTag.prev || adjacentByTag.next))
+    ? html`
+      <div style="margin-bottom: 20px; padding: 12px 16px; background: #f5f8f5; border: 1px solid #d0e0d0; border-radius: 6px;">
+        <div style="font-size: 12px; color: #666; margin-bottom: 8px;">
+          タグ「<a href="/?tag=${encodeURIComponent(primaryTag)}" style="color: #2d7a3a; text-decoration: none;">${primaryTag}</a>」の関連記事
+        </div>
+        <div style="display: flex; gap: 15px; font-size: 13px;">
+          ${adjacentByTag.prev ? html`
+            <a href="/posts/${adjacentByTag.prev.slug}" style="color: #0066cc; text-decoration: none; flex: 1;">
+              ← ${truncateTitle(adjacentByTag.prev.title)}
+            </a>
+          ` : html`<span style="color: #cccccc; flex: 1;">← なし</span>`}
+          ${adjacentByTag.next ? html`
+            <a href="/posts/${adjacentByTag.next.slug}" style="color: #0066cc; text-decoration: none; flex: 1; text-align: right;">
+              ${truncateTitle(adjacentByTag.next.title)} →
+            </a>
+          ` : html`<span style="color: #cccccc; flex: 1; text-align: right;">なし →</span>`}
+        </div>
+      </div>
+    `
+    : '';
+
   return html`
     <article>
       <h2>${post.title}</h2>
@@ -47,6 +75,7 @@ export const postPage = (post: Post, adjacent?: AdjacentPosts) => {
       <div style="margin-bottom: 15px;">
         <a href="/" class="back-link" style="font-size: 14px;">← 一覧に戻る</a>
       </div>
+      ${html([relatedByTagHtml as string])}
       ${adjacent ? html`
         <div style="display: flex; gap: 20px; font-size: 14px;">
           ${adjacent.prev ? html`
