@@ -96,9 +96,9 @@ export const adminPage = (posts: Post[], pagination?: PaginationInfo) => {
             </label>
             <select name="tag" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
               <option value="">すべてのタグ</option>
-              ${pagination.tags.map((t: string) =>
+              ${html([pagination.tags.map((t: string) =>
                 `<option value="${t}" ${pagination.tag === t ? 'selected' : ''}>${t}</option>`
-              ).join('')}
+              ).join('')])}
             </select>
           </div>
 
