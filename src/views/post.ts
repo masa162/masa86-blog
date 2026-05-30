@@ -11,7 +11,7 @@ interface AdjacentPosts {
 export const postPage = (post: Post, adjacent?: AdjacentPosts) => {
   const tags = Array.isArray(post.tags) ? post.tags : JSON.parse(post.tags as string);
   const tagsHtml = tags.map((tag: string) =>
-    `<span class="tag">${tag}</span>`
+    `<a href="/?tag=${encodeURIComponent(tag)}" class="tag" style="text-decoration: none;">${tag}</a>`
   ).join('');
 
   // ショートコード処理（YouTube、Amazonなど）
